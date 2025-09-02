@@ -1,6 +1,4 @@
 # 1. Deployment: Defines the Nginx pods
-# This resource's name matches the K8S_DEPLOYMENT_NAME in the GitHub workflow.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +22,8 @@ spec:
             httpGet:
               path: /
               port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /
