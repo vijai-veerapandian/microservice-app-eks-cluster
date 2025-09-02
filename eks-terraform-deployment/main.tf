@@ -23,8 +23,8 @@ locals {
 #### EKS BLUEPRINTS
 
 module "eks" {
-  source  = "aws-ia/eks-blueprints/aws"
-  version = "~> 4.32"
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
 
   cluster_name    = local.name
   cluster_version = var.cluster_version
@@ -34,19 +34,30 @@ module "eks" {
   subnet_ids                           = module.vpc.private_subnets
   cluster_endpoint_private_access      = true
   cluster_endpoint_public_access       = true
-  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+  cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   # Security
-  create_kms_key = true
-  cluster_encryption_config = [
-    {
-      provider_key_arn = aws_kms_key.eks.arn
-      resources        = ["secrets"]
-    }
-  ]
+  cluster_encryption_config = {
+    provider_key_arn = aws_kms_key.eks.arn
+    resources        = ["secrets"]
+  }
 
   # Logging
   cluster_enabled_log_types = ["audit", "api", "authenticator", "controllerManager", "scheduler"]
+
+  # Grant cluster access to the IAM entity that is running Terraform
+  access_entries = {
+    # The user/role that creates the cluster
+    cluster_creator = {
+      principal_arn = data.aws_caller_identity.current.arn
+      policy_associations = {
+        cluster_admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
 
   # EKS Addons
   cluster_addons = {
@@ -73,7 +84,7 @@ module "eks" {
   }
 
   # EKS Managed Node Groups
-  managed_node_groups = {
+  eks_managed_node_groups = {
     # On-Demand Node Group
     mg_5 = {
       node_group_name = "${local.name}-managed-ondemand"
@@ -90,7 +101,6 @@ module "eks" {
       disk_size = 50
       disk_type = "gp3"
 
-      remote_access        = false
       force_update_version = false
 
       k8s_taints = []
@@ -109,16 +119,10 @@ module "eks" {
       create_launch_template = true
       launch_template_os     = "amazonlinux2eks"
 
-      pre_userdata = <<-EOT
-        #!/bin/bash
-        set -ex
-        /etc/eks/bootstrap.sh ${local.name}
-      EOT
-
       # Node group update configuration
-      update_config = [{
+      update_config = {
         max_unavailable_percentage = 25
-      }]
+      }
     }
 
     # Spot Instance Node Group
@@ -157,9 +161,9 @@ module "eks" {
       create_launch_template = true
       launch_template_os     = "amazonlinux2eks"
 
-      update_config = [{
+      update_config = {
         max_unavailable_percentage = 25
-      }]
+      }
     }
   }
 
@@ -208,7 +212,7 @@ module "ebs_csi_driver_irsa" {
 
 module "eks_blueprints_addons" {
   source  = "aws-ia/eks-blueprints-addons/aws"
-  version = "~> 1.0"
+  version = "~> 1.13" # Using a more specific version constraint
 
   cluster_name      = module.eks.cluster_name
   cluster_endpoint  = module.eks.cluster_endpoint
@@ -302,31 +306,11 @@ module "eks_blueprints_addons" {
     ]
   }
 
-  # 2. CONFIGURE FLUENTBIT
-  # This addon automatically creates an IAM role for S3 and CloudWatch access.
-
+  # Configure Fluent Bit to send logs to CloudWatch (default) and an S3 bucket.
+  # The addon handles creating the necessary IAM role and service account.
   aws_for_fluentbit = {
-    # Helm chart values
-    values = [
-      <<-EOT
-        cloudWatch:
-          enabled: true
-          region: "${var.aws_region}"
-          logGroupName: "/aws/eks/${var.cluster_name}/logs"
-        firehose:
-          enabled: false
-        kinesis:
-          enabled: false
-        elasticsearch:
-          enabled: false
-        s3:
-          enabled: true
-          region: "${var.aws_region}"
-          bucket: "${aws_s3_bucket.logs.id}"
-          # The role is created by the addon, you reference it here
-          role_arn: "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/fluent-bit-s3-role-${var.cluster_name}"
-      EOT
-    ]
+    # Note: This assumes you have a resource 'aws_s3_bucket "logs"' defined elsewhere in your configuration.
+    s3_log_bucket_name = aws_s3_bucket.logs.id
   }
 
   tags = local.tags

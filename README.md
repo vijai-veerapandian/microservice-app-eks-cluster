@@ -120,3 +120,55 @@ AWS Secret Access Key [None]: xxxxx
 Default region name [None]: us-west-2
 Default output format [None]: json
 ```
+
+#### Step: Execute terraform cmds
+
+```
+terraform init 
+terraform plan 
+terraform apply -auto-approve
+```
+
+#### Step: Validate terraform output
+
+```
+ eks-terraform-deployment git:(main) ✗ terraform output cluster_arn                                             
+
+"arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster"
+```
+
+```
+➜  eks-terraform-deployment git:(main) ✗ aws eks --region us-west-2 update-kubeconfig --name eks-blueprint-cluster
+Added new context arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster to /home/vijai/.kube/config
+➜  eks-terraform-deployment git:(main) ✗ 
+```
+
+```
+➜  eks-terraform-deployment git:(main) ✗ kubectl get nodes
+NAME                                      STATUS   ROLES    AGE   VERSION
+ip-10-0-47-4.us-west-2.compute.internal   Ready    <none>   21m   v1.28.15-eks-3abbec1
+ip-10-0-9-39.us-west-2.compute.internal   Ready    <none>   23m   v1.28.15-eks-3abbec1
+➜  eks-terraform-deployment git:(main) ✗ kubectl get pods -A
+NAMESPACE           NAME                                                        READY   STATUS    RESTARTS   AGE
+amazon-cloudwatch   aws-cloudwatch-metrics-hs5tk                                1/1     Running   0          21m
+amazon-cloudwatch   aws-cloudwatch-metrics-ngtsz                                1/1     Running   0          22m
+cert-manager        cert-manager-55657857dd-k52zr                               1/1     Running   0          25m
+cert-manager        cert-manager-cainjector-7b5b5d4786-f2nm4                    1/1     Running   0          25m
+cert-manager        cert-manager-webhook-55fb5c9c88-kpkxk                       1/1     Running   0          25m
+kube-system         aws-for-fluent-bit-8b45f                                    1/1     Running   0          22m
+kube-system         aws-for-fluent-bit-w257t                                    1/1     Running   0          21m
+kube-system         aws-load-balancer-controller-67d4dbcf74-5klnv               1/1     Running   0          25m
+kube-system         aws-load-balancer-controller-67d4dbcf74-mk86v               1/1     Running   0          25m
+kube-system         aws-node-bg6zh                                              2/2     Running   0          20m
+kube-system         aws-node-gbkc4                                              2/2     Running   0          20m
+kube-system         cluster-autoscaler-aws-cluster-autoscaler-9b6d669dc-xkkvs   1/1     Running   0          25m
+kube-system         coredns-5f4bcd6c95-rnfvb                                    1/1     Running   0          20m
+kube-system         coredns-5f4bcd6c95-wm6xh                                    1/1     Running   0          20m
+kube-system         ebs-csi-controller-5d86447476-gjcmr                         6/6     Running   0          20m
+kube-system         ebs-csi-controller-5d86447476-nd7g7                         6/6     Running   0          20m
+kube-system         ebs-csi-node-54dhx                                          3/3     Running   0          20m
+kube-system         ebs-csi-node-vclln                                          3/3     Running   0          20m
+kube-system         kube-proxy-k9npj                                            1/1     Running   0          20m
+kube-system         kube-proxy-xkdxp                                            1/1     Running   0          20m
+kube-system         metrics-server-6d449868fd-prpwc                             1/1     Running   0          25m
+```

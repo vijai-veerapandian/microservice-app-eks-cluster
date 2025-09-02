@@ -53,3 +53,9 @@ variable "node_instance_types" {
   type        = list(string)
   default     = ["m5.large"]
 }
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "List of CIDR blocks to allow access to the EKS public endpoint. To disable public access, set to an empty list."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

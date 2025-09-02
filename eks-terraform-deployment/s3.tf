@@ -13,6 +13,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
     id     = "log-expiration"
     status = "Enabled"
 
+    filter {} # Apply to all objects in the bucket
+
     expiration {
       days = 30 # Configure retention period
     }

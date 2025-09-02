@@ -1,0 +1,99 @@
+# nginx-deployment.yaml
+
+# ==============================================================================
+# 1. ConfigMap: A custom index.html page for our Nginx server
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-index-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Welcome to EKS!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #232F3E;
+        color: #FFFFFF;
+        margin: 0;
+        text-align: center;
+      }
+      .container {
+        padding: 40px;
+        border-radius: 15px;
+        background-color: #1A222C;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      }
+      h1 {
+        color: #FF9900;
+      }
+      p {
+        font-size: 1.2em;
+      }
+    </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Hello from your EKS Cluster!</h1>
+        <p>Your Nginx web server is running successfully.</p>
+        <p>Access logs from this session are being sent to CloudWatch and S3 via Fluent Bit.</p>
+        <p><em>Page served on: Tue, 02 Sep 2025</em></p>
+      </div>
+    </body>
+    </html>
+
+---
+# ==============================================================================
+# 2. Deployment: Defines the Nginx pods
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.25 # Using a specific version is better than 'latest'
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-index-html
+
+---
+# ==============================================================================
+# 3. Service: Exposes the Nginx deployment to the internet
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  # This will create an AWS Elastic Load Balancer to expose the service.
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80 # The port the service is exposed on
+      targetPort: 80 # The port on the pods to send traffic to
