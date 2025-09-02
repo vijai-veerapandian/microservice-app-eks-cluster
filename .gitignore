@@ -20,3 +20,31 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Local Terraform directories
+.terraform/
+.terraform.d/
+
+# Local state files
+# These files can contain sensitive information and should never be versioned.
+*.tfstate
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files to avoid committing sensitive variables.
+# If you have an example variable file, you can add it back with ! (e.g., !variables.tfvars.example)
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are meant to be temporary local changes
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration files
+.terraformrc
+terraform.rc
