@@ -86,3 +86,37 @@ kubectl version --client
 
 #### Step: AWS IAM User creation for terraform
 
+Login to AWS Console: Go to https://console.aws.amazon.com/
+Navigate to IAM: Search for "IAM" in services
+Create User:
+
+Click "Users" → "Create user"
+Username: terraform-eks-user
+
+Attach Policies directly no need to create group for the user
+
+Select "Attach existing policies directly"
+Search and attach these policies:
+
+AdministratorAccess (for simplicity)
+Or for production, use these specific policies:
+
+AmazonEKSClusterPolicy
+AmazonEKSWorkerNodePolicy
+AmazonEKS_CNI_Policy
+AmazonEC2ContainerRegistryReadOnly
+IAMFullAccess
+AmazonVPCFullAccess
+AmazonEC2FullAccess
+
+once created review it and then select and create accesskey and copy the key and secrets.
+
+update the local aws cli to use the access and secret key.
+
+```
+➜  microservice-app-eks-cluster git:(main) aws configure
+AWS Access Key ID [None]: xxxxx
+AWS Secret Access Key [None]: xxxxx
+Default region name [None]: us-west-2
+Default output format [None]: json
+```
