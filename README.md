@@ -1,4 +1,7 @@
-# microservice-app-eks-cluster
+#### microservice-app-eks-cluster
+
+#### Technical stack 
+
 Deploying container application into AWS EKS using EKS blueprint
 
 # Download AWS CLI v2
@@ -30,7 +33,8 @@ rm -rf awscliv2.zip aws/
 ```
 
 
-#### Install Terraform 
+#### Step: Terraform Installation 
+
 # Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
 TERRAFORM_VERSION="1.13.1"
 
@@ -66,3 +70,18 @@ rm terraform_1.13.1_linux_amd64.zip
 Terraform v1.13.1
 on linux_amd64
 ```
+
+#### Step: kubectl installation 
+
+# Download the latest stable version
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+# Make executable and move to PATH
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+# Verify installation
+kubectl version --client
+# Should output client version information
+
+#### Step: AWS IAM User creation for terraform
