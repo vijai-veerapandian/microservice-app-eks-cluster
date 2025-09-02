@@ -33,7 +33,22 @@ rm -rf awscliv2.zip aws/
 #### Install Terraform 
 # Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
 TERRAFORM_VERSION="1.13.1"
-wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+
+```
+➜  microservice-app-eks-cluster git:(main) wget https://releases.hashicorp.com/terraform/1.13.1/terraform_1.13.1_linux_amd64.zip
+--2025-09-02 11:50:15--  https://releases.hashicorp.com/terraform/1.13.1/terraform_1.13.1_linux_amd64.zip
+Loaded CA certificate '/etc/ssl/certs/ca-certificates.crt'
+Resolving releases.hashicorp.com (releases.hashicorp.com)... 3.164.92.12, 3.164.92.66, 3.164.92.93, ...
+Connecting to releases.hashicorp.com (releases.hashicorp.com)|3.164.92.12|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 30635389 (29M) [application/zip]
+Saving to: ‘terraform_1.13.1_linux_amd64.zip’
+
+terraform_1.13.1_linux_amd64.zip                   100%[==============================================================================================================>]  29.22M  97.2MB/s    in 0.3s    
+
+2025-09-02 11:50:16 (97.2 MB/s) - ‘terraform_1.13.1_linux_amd64.zip’ saved [30635389/30635389]
+```
+
 
 # Extract and install
 unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
@@ -43,8 +58,11 @@ sudo mv terraform /usr/local/bin/
 sudo chmod +x /usr/local/bin/terraform
 
 # Clean up
-rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+rm terraform_1.13.1_linux_amd64.zip
 
 # Verify installation
-terraform --version
-# Should output: Terraform v1.6.6
+```
+➜  microservice-app-eks-cluster git:(main) ✗ terraform --version
+Terraform v1.13.1
+on linux_amd64
+```
