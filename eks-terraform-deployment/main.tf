@@ -33,6 +33,12 @@ module "eks" {
     cluster-autoscaler = {
       most_recent = true
     }
+    aws-for-fluent-bit = {
+      most_recent = true
+    }
+    metrics-server = {
+      most_recent = true
+    }
   }
 
   # Single node group for simplicity
@@ -53,38 +59,3 @@ module "eks" {
 
   tags = local.tags
 }
-
-# =====================================================================
-# Helm Provider
-# =====================================================================
-provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-
-    exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      command     = "aws"
-      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
-    }
-  }
-}
-
-# =====================================================================
-# Essential Add-ons
-# =====================================================================
-
-# Metrics Server
-resource "helm_release" "metrics_server" {
-  name       = "metrics-server"
-  repository = "https://kubernetes-sigs.github.io/metrics-server/"
-  chart      = "metrics-server"
-  namespace  = "kube-system"
-
-  depends_on = [module.eks]
-}
-
-# =====================================================================
-# Data sources
-# =====================================================================
-data "aws_region" "current" {}
