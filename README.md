@@ -107,16 +107,16 @@ Select "Attach existing policies directly"
 
 Search and attach these policies:
 
-AdministratorAccess (for simplicity)
+- AdministratorAccess (for simplicity)
 Or for production, use these specific policies:
 
-*AmazonEKSClusterPolicy
-*AmazonEKSWorkerNodePolicy
-*AmazonEKS_CNI_Policy
-*AmazonEC2ContainerRegistryReadOnly
-*IAMFullAccess
-*AmazonVPCFullAccess
-*AmazonEC2FullAccess
+- AmazonEKSClusterPolicy
+- AmazonEKSWorkerNodePolicy
+- AmazonEKS_CNI_Policy
+- AmazonEC2ContainerRegistryReadOnly
+- IAMFullAccess
+- AmazonVPCFullAccess
+- AmazonEC2FullAccess
 
 once created review it and then select and create accesskey and copy the key and secrets.
 
