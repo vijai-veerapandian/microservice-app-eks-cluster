@@ -102,3 +102,9 @@ variable "enable_fluentbit" {
   type        = bool
   default     = true
 }
+
+variable "enable_logging" {
+  description = "Enable logging with Fluent Bit"
+  type        = bool
+  default     = false
+}
