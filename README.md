@@ -1,4 +1,4 @@
-### microservice-app-eks-cluster
+### Microservice-app-eks-cluster
 
 ### Technical stack 
 
@@ -71,7 +71,7 @@ Terraform v1.13.1
 on linux_amd64
 ```
 
-#### Step: kubectl installation 
+### Step: kubectl installation 
 
 # Download the latest stable version
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -84,7 +84,7 @@ sudo mv kubectl /usr/local/bin/
 kubectl version --client
 # Should output client version information
 
-#### Step: AWS IAM User creation for terraform
+### Step: AWS IAM User creation for terraform
 
 Login to AWS Console: Go to https://console.aws.amazon.com/
 Navigate to IAM: Search for "IAM" in services
@@ -122,7 +122,7 @@ Default output format [None]: json
 ```
 
 ```
-#### Step: Build microservice docker image
+### Step: Build microservice docker image
 
 ```
 cd microservice-app-eks-cluster/eks-apps 
@@ -156,9 +156,9 @@ docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
 
 ```
 
-#### Step: Create EKS Cluster using Terraform 
+### Step: Create EKS Cluster using Terraform 
 
-#### Step: Execute terraform cmds
+### Step: Execute terraform cmds
 
 ```
 terraform init 
@@ -166,7 +166,7 @@ terraform plan
 terraform apply -auto-approve
 ```
 
-#### Step: Validate terraform output
+### Step: Validate terraform output
 
 ```
  eks-terraform-deployment git:(main) ✗ terraform output cluster_arn                                             
@@ -218,7 +218,7 @@ kube-system         metrics-server-6d449868fd-ml4cz                             
 
 
 
-#### Deploy the API manually into the EKS cluster.
+### Deploy the API manually into the EKS cluster.
 
 ```
 cd ../eks-apps/
@@ -234,5 +234,5 @@ deployment.apps/nginx-deployment created
 service/nginx-service created
 ```
 
-#### Validate the running application on the EKS Cluster
+### Validate the running application on the EKS Cluster
 
