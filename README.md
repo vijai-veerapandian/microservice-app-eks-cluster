@@ -15,14 +15,14 @@ sudo ./aws/install
 
 
 ```
-➜  microservice-app-eks-cluster git:(main) ✗ pwd
+➜  microservice-app-eks-cluster git:(main)  pwd
 /home/vijai/Documents/backup-2-arch/microservice-app-eks-cluster
 ```
 
 ```
-➜  aws git:(main) ✗ sudo ./install
+➜  aws git:(main)  sudo ./install
 You can now run: /usr/local/bin/aws --version
-➜  aws git:(main) ✗ aws --version
+➜  aws git:(main)  aws --version
 aws-cli/2.28.21 Python/3.13.7 Linux/6.15.9-arch1-1 exe/x86_64.arch
 ```
 
@@ -70,7 +70,7 @@ rm terraform_1.13.1_linux_amd64.zip
 ```
 #### Verify installation
 ```
-➜  microservice-app-eks-cluster git:(main) ✗ terraform --version
+➜  microservice-app-eks-cluster git:(main)  terraform --version
 Terraform v1.13.1
 on linux_amd64
 ```
@@ -176,22 +176,22 @@ terraform apply -auto-approve
 ### Step: Validate terraform output
 
 ```
- eks-terraform-deployment git:(main) ✗ terraform output cluster_arn                                             
+ eks-terraform-deployment git:(main)  terraform output cluster_arn                                             
 
 "arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster"
 ```
 
 ```
-➜  eks-terraform-deployment git:(main) ✗ aws eks --region us-west-2 update-kubeconfig --name eks-blueprint-cluster
+➜  eks-terraform-deployment git:(main)  aws eks --region us-west-2 update-kubeconfig --name eks-blueprint-cluster
 Updated context arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster in /home/vijai/.kube/config
-➜  eks-terraform-deployment git:(main) ✗ kubectl get nodes
+➜  eks-terraform-deployment git:(main)  kubectl get nodes
 NAME                                        STATUS   ROLES    AGE     VERSION
 ip-10-0-13-111.us-west-2.compute.internal   Ready    <none>   8m50s   v1.28.15-eks-3abbec1
 ip-10-0-26-54.us-west-2.compute.internal    Ready    <none>   8m29s   v1.28.15-eks-3abbec1
 ip-10-0-36-54.us-west-2.compute.internal    Ready    <none>   8m49s   v1.28.15-eks-3abbec1
-➜  eks-terraform-deployment git:(main) ✗ kubect get pods -A
+➜  eks-terraform-deployment git:(main)  kubect get pods -A
 zsh: command not found: kubect
-➜  eks-terraform-deployment git:(main) ✗ kubectl get pods -A
+➜  eks-terraform-deployment git:(main)  kubectl get pods -A
 NAMESPACE           NAME                                                        READY   STATUS    RESTARTS   AGE
 amazon-cloudwatch   aws-cloudwatch-metrics-dtjx4                                1/1     Running   0          8m52s
 amazon-cloudwatch   aws-cloudwatch-metrics-nx4f5                                1/1     Running   0          8m52s
@@ -219,21 +219,21 @@ kube-system         kube-proxy-hhg9w                                            
 kube-system         kube-proxy-hv7h7                                            1/1     Running   0          7m39s
 kube-system         kube-proxy-vnvxh                                            1/1     Running   0          7m48s
 kube-system         metrics-server-6d449868fd-ml4cz                             1/1     Running   0          13m
-➜  eks-terraform-deployment git:(main) ✗
+➜  eks-terraform-deployment git:(main) 
 ```
 
 ### Deploy the API manually into the EKS cluster.
 
 ```
 cd ../eks-apps/
-➜  eks-apps git:(main) ✗ ls
+➜  eks-apps git:(main)  ls
 api-deployment.yaml  namespace.yaml  nginx-deployment.yaml
-➜  eks-apps git:(main) ✗ kubectl apply -f namespace.yaml 
+➜  eks-apps git:(main)  kubectl apply -f namespace.yaml 
 namespace/app1 created
-➜  eks-apps git:(main) ✗ kubectl apply -f api-deployment.yaml 
+➜  eks-apps git:(main)  kubectl apply -f api-deployment.yaml 
 deployment.apps/api-deployment created
 service/api-service created
-➜  eks-apps git:(main) ✗ kubectl apply -f nginx-deployment.yaml 
+➜  eks-apps git:(main)  kubectl apply -f nginx-deployment.yaml 
 deployment.apps/nginx-deployment created
 service/nginx-service created
 ```
