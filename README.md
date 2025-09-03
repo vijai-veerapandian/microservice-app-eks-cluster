@@ -172,14 +172,72 @@ kube-system         kube-proxy-k9npj                                            
 kube-system         kube-proxy-xkdxp                                            1/1     Running   0          20m
 kube-system         metrics-server-6d449868fd-prpwc                             1/1     Running   0          25m
 ```
-#### Step: Build microservice and push to ECR
+#### Step: Build microservice docker image
 
 cd microservice-app-eks-cluster/apps 
 
 ```
-docker build -t nginx-custom:initial .
+➜  apps git:(main) ✗ docker build -t nginx-custom:initial .
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
 
-docker tag nginx-custom:initial 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+Sending build context to Docker daemon  5.632kB
+Step 1/3 : FROM nginx:alpine
+alpine: Pulling from library/nginx
+9824c27679d3: Pulling fs layer
 
-docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+Step 2/3 : RUN rm /usr/share/nginx/html/index.html
+ ---> Running in 9a24a98fdd69
+ ---> Removed intermediate container 9a24a98fdd69
+ ---> 7fad00e2dc58
+Step 3/3 : COPY index.html /usr/share/nginx/html
+ ---> 21a38c2e86e4
+Successfully built 21a38c2e86e4
+Successfully tagged nginx-custom:initial
+```
+
+Taging:
+```
+➜  apps git:(main) ✗ docker tag nginx-custom:initial 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+
+➜  apps git:(main) ✗ docker images
+REPOSITORY                                                  TAG            IMAGE ID       CREATED              SIZE
+800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom   initial        21a38c2e86e4   About a minute ago   52.5MB
+```
+
+
+#### Step: Authenticate to ECR and push the image
+
+```
+➜  apps git:(main) ✗ aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 800216803559.dkr.ecr.us-west-2.amazonaws.com
+
+WARNING! Your credentials are stored unencrypted in '/home/vijai/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
+```
+
+#### Pushing the image to ECR
+
+Create the repository inside AWS ECR usign aws ecr command like below
+```
+➜  apps git:(main) ✗ aws ecr create-repository --repository-name nginx-custom --region us-west-2
+```
+Now, push the docker image into the ECR
+```
+➜  apps git:(main) ✗ docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+The push refers to repository [800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom]
+51741378497e: Pushed 
+449f359897b1: Pushed 
+f9985d3fc94d: Pushed 
+d208138be39d: Pushed 
+a2b76470e8f1: Pushed 
+917b2c97271e: Pushed 
+16ca725632e5: Pushed 
+7978a9c91f72: Pushed 
+b6ff0212304e: Pushed 
+418dccb7d85a: Pushed 
+initial: digest: sha256:3aa54ddbb72f60f0721cfee79df39d6df0b3ca5462200950bf3c208e5208ae3c size: 2403
 ```
