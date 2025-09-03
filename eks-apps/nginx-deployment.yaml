@@ -6,6 +6,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
+  namespace: app1
 spec:
   replicas: 2
   selector:
@@ -41,6 +42,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
+  namespace: app1
 spec:
   # This creates an AWS Elastic Load Balancer to expose the service.
   type: LoadBalancer
