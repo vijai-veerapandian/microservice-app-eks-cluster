@@ -21,7 +21,7 @@ spec:
         - name: nginx-proxy-container
           # IMPORTANT: This image URI points to the Nginx image with your
           # reverse proxy configuration (nginx.conf).
-          image: 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+          image: 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
           ports:
             - containerPort: 80
           # Health checks to ensure the Nginx server is running and ready.
