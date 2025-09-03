@@ -225,10 +225,10 @@ resource "aws_instance" "demo_app" {
   subnet_id              = aws_subnet.public_subnets["public_subnet_1"].id
   vpc_security_group_ids = [aws_security_group.demo_sg.id]
   key_name               = aws_key_pair.generated.key_name
-  
+
   tags = {
-    Terraform   = "true"
-    Name        = var.instance_name
+    Terraform = "true"
+    Name      = var.instance_name
   }
 }
 
@@ -243,23 +243,21 @@ resource "null_resource" "docker_setup" {
     }
 
     inline = [
-  "set -e",  # Stop on the first error
-  "set -x",  # Print each command before execution
-  "sudo apt update",
-  "curl -fsSL https://get.docker.com -o get-docker.sh",
-  "sudo sh get-docker.sh",
-  "sudo systemctl enable docker",
-  "sudo systemctl start docker",
-  "sudo usermod -aG docker ubuntu",
-  "sudo apt-get install docker-compose -y",
-  "docker --version",
-  "docker-compose --version",
-  "sleep 10",
-  "sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions",
-  "sudo docker plugin ls",
-  "sleep 5",
-  "git clone --branch testv4 https://github.com/vijai-veerapandian/myweather-app.git /home/ubuntu/app || true",
-  "cd /home/ubuntu/app && sudo docker-compose up -d"
+      "set -e", # Stop on the first error
+      "set -x", # Print each command before execution
+      "sudo apt update",
+      "curl -fsSL https://get.docker.com -o get-docker.sh",
+      "sudo sh get-docker.sh",
+      "sudo systemctl enable docker",
+      "sudo systemctl start docker",
+      "sudo usermod -aG docker ubuntu",
+      "sudo apt-get install docker-compose -y",
+      "docker --version",
+      "docker-compose --version",
+      "sleep 10",
+      "sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions",
+      "sudo docker plugin ls",
+      "sleep 5",
     ]
   }
 
