@@ -314,4 +314,9 @@ module "eks_blueprints_addons" {
   }
 
   tags = local.tags
+
+  depends_on = [
+    # This explicit dependency is required to ensure the LBC's webhook is ready before other addons are installed.
+    module.eks_blueprints_addons.aws_load_balancer_controller_helm_release
+  ]
 }
