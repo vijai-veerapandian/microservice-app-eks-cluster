@@ -176,25 +176,39 @@ kube-system         metrics-server-6d449868fd-prpwc                             
 
 cd microservice-app-eks-cluster/eks-apps 
 
-# Create the new repo
 
 ```
-aws ecr create-repository --repository-name flask-api --region us-west-2
-```
-# Build, tag, and push the API image to AWS ECR
+# Build, tag, create ECR repo and then push the API image and the Nginx Image into AWS ECR
 
 ```
-docker build -t flask-api:initial .
+docker build -t flask-api:initial -f api-Dockerfile .
+
+docker build -t nginx-image:latest -f nginx-Dockerfile .
+
 
 docker tag flask-api:initial 800216803559.dkr.ecr.us-west-2.amazonaws.com/flask-api:initial
 
+docker tag nginx-image:latest 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
+
+
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 800216803559.dkr.ecr.us-west-2.amazonaws.com
 
+aws ecr create-repository --repository-name flask-api --region us-west-2
+
 docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/flask-api:initial
+
+aws ecr create-repository --repository-name nginx-image --region us-west-2
+
+docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
+
 ```
 
 #### Deploy the API manually into the EKS cluster.
 
 ```
 kubectl apply -f api-deployment.yaml
+kubectl apply -f nginx-deployment.yaml
+
 ```
+
+#### Validate the running application on the EKS Cluster
