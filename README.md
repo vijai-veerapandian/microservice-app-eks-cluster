@@ -1,10 +1,10 @@
-#### microservice-app-eks-cluster
+### microservice-app-eks-cluster
 
-#### Technical stack 
+### Technical stack 
 
 Deploying container application into AWS EKS using EKS blueprint
 
-# Download AWS CLI v2
+### Download AWS CLI v2
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 
 # Extract the installer
@@ -33,7 +33,7 @@ rm -rf awscliv2.zip aws/
 ```
 
 
-#### Step: Terraform Installation 
+### Step: Terraform Installation 
 
 # Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
 TERRAFORM_VERSION="1.13.1"
