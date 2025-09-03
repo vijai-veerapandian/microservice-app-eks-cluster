@@ -240,3 +240,9 @@ service/nginx-service created
 
 ### Validate the running application on the EKS Cluster
 
+
+
+### step: EC2 instance deployment via Terraform 
+
+#### Replace <public_ip_address> with the actual IP from the previous step
+ssh -i ec2awskey.pem ubuntu@<public_ip_address>
