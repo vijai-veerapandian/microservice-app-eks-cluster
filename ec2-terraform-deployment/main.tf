@@ -10,7 +10,6 @@
 # 10 Associate the Route table with the public and private subnet
 # 11 Define SSH Key generation for AWS EC2 instance
 # 12 Deploy AWS EC2 instance
-# 13 S3 Bucket deploy only if not existing
 
 # 1 Retrieve the list of AZs in the current AWS region
 data "aws_availability_zones" "available" {}
@@ -262,18 +261,6 @@ resource "null_resource" "docker_setup" {
   }
 
   depends_on = [aws_instance.demo_app]
-}
-
-# 13 Backend configuration for S3 and DynamoDB
-
-terraform {
-  backend "s3" {
-    bucket         = "mytf-state-app-bucket"
-    key            = "terraform/state.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "terraform-lock-table"
-  }
 }
 
 provider "aws" {
