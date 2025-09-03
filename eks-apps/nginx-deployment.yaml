@@ -1,0 +1,55 @@
+# ==============================================================================
+# 1. Deployment: Defines the Nginx Reverse Proxy pods
+# This resource will be updated by your CI/CD pipeline.
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+    spec:
+      containers:
+        - name: nginx-proxy-container
+          # IMPORTANT: This image URI points to the Nginx image with your
+          # reverse proxy configuration (nginx.conf).
+          image: 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+          ports:
+            - containerPort: 80
+          # Health checks to ensure the Nginx server is running and ready.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+---
+# ==============================================================================
+# 2. Service: Exposes the Nginx proxy to the internet via a Load Balancer
+# This creates a public entry point for your application.
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  # This creates an AWS Elastic Load Balancer to expose the service.
+  type: LoadBalancer
+  selector:
+    # This selector matches the labels on the Nginx pods defined above.
+    app: nginx-proxy
+  ports:
+    - protocol: TCP
+      # The port on the Load Balancer that will be open to the internet.
+      port: 80
+      # The port on the Nginx pods to forward traffic to.
+      targetPort: 80
