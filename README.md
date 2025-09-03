@@ -7,10 +7,10 @@ Deploying container application into AWS EKS using EKS blueprint
 ### Download AWS CLI v2
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 
-# Extract the installer
+#### Extract the installer
 unzip awscliv2.zip
 
-# Run the installer
+#### Run the installer
 sudo ./aws/install
 
 
@@ -35,7 +35,7 @@ rm -rf awscliv2.zip aws/
 
 ### Step: Terraform Installation 
 
-# Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
+#### Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
 TERRAFORM_VERSION="1.13.1"
 
 ```
@@ -54,17 +54,17 @@ terraform_1.13.1_linux_amd64.zip                   100%[========================
 ```
 
 
-# Extract and install
+#### Extract and install
 unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 sudo mv terraform /usr/local/bin/
 
-# Make executable
+#### Make executable
 sudo chmod +x /usr/local/bin/terraform
 
-# Clean up
+#### Clean up
 rm terraform_1.13.1_linux_amd64.zip
 
-# Verify installation
+#### Verify installation
 ```
 ➜  microservice-app-eks-cluster git:(main) ✗ terraform --version
 Terraform v1.13.1
@@ -73,16 +73,16 @@ on linux_amd64
 
 ### Step: kubectl installation 
 
-# Download the latest stable version
+#### Download the latest stable version
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
-# Make executable and move to PATH
+#### Make executable and move to PATH
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 
-# Verify installation
+#### Verify installation
 kubectl version --client
-# Should output client version information
+#### Should output client version information
 
 ### Step: AWS IAM User creation for terraform
 
@@ -128,7 +128,7 @@ Default output format [None]: json
 cd microservice-app-eks-cluster/eks-apps 
 ```
 
-# Build, tag, create ECR repo and then push the API image and the Nginx Image into AWS ECR
+#### Build, tag, create ECR repo and then push the API image and the Nginx Image into AWS ECR
 
 ```
 docker build -t flask-api:initial -f api-Dockerfile .
