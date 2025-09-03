@@ -36,6 +36,7 @@ rm -rf awscliv2.zip aws/
 ### Step: Terraform Installation 
 
 #### Download Terraform (check for latest version at https://releases.hashicorp.com/terraform/)
+
 TERRAFORM_VERSION="1.13.1"
 
 ```
@@ -53,17 +54,20 @@ terraform_1.13.1_linux_amd64.zip                   100%[========================
 2025-09-02 11:50:16 (97.2 MB/s) - ‘terraform_1.13.1_linux_amd64.zip’ saved [30635389/30635389]
 ```
 
-
 #### Extract and install
+
+```
 unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 sudo mv terraform /usr/local/bin/
-
+```
 #### Make executable
+```
 sudo chmod +x /usr/local/bin/terraform
-
+```
 #### Clean up
+```
 rm terraform_1.13.1_linux_amd64.zip
-
+```
 #### Verify installation
 ```
 ➜  microservice-app-eks-cluster git:(main) ✗ terraform --version
@@ -74,14 +78,18 @@ on linux_amd64
 ### Step: kubectl installation 
 
 #### Download the latest stable version
+```
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-
+```
 #### Make executable and move to PATH
+```
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
-
+```
 #### Verify installation
+```
 kubectl version --client
+```
 #### Should output client version information
 
 ### Step: AWS IAM User creation for terraform
@@ -119,8 +127,6 @@ AWS Access Key ID [None]: xxxxx
 AWS Secret Access Key [None]: xxxxx
 Default region name [None]: us-west-2
 Default output format [None]: json
-```
-
 ```
 ### Step: Build microservice docker image
 
@@ -214,9 +220,6 @@ kube-system         kube-proxy-vnvxh                                            
 kube-system         metrics-server-6d449868fd-ml4cz                             1/1     Running   0          13m
 ➜  eks-terraform-deployment git:(main) ✗
 ```
-
-
-
 
 ### Deploy the API manually into the EKS cluster.
 
