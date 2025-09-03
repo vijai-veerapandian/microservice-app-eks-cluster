@@ -172,3 +172,14 @@ kube-system         kube-proxy-k9npj                                            
 kube-system         kube-proxy-xkdxp                                            1/1     Running   0          20m
 kube-system         metrics-server-6d449868fd-prpwc                             1/1     Running   0          25m
 ```
+#### Step: Build microservice and push to ECR
+
+cd microservice-app-eks-cluster/apps 
+
+```
+docker build -t nginx-custom:initial .
+
+docker tag nginx-custom:initial 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+
+docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-custom:initial
+```
