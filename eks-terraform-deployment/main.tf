@@ -65,7 +65,7 @@ module "eks" {
 # Wait for cluster to be ready
 # =====================================================================
 resource "time_sleep" "wait_for_cluster" {
-  depends_on = [module.eks]
+  depends_on      = [module.eks]
   create_duration = "30s"
 }
 
@@ -76,9 +76,9 @@ resource "time_sleep" "wait_for_cluster" {
 # Configure kubectl and install AWS Load Balancer Controller
 resource "null_resource" "install_alb_controller" {
   count = var.enable_alb_controller ? 1 : 0
-  
+
   depends_on = [module.eks, time_sleep.wait_for_cluster]
-  
+
   provisioner "local-exec" {
     command = <<-EOF
       # Configure kubectl
@@ -103,7 +103,7 @@ resource "null_resource" "install_alb_controller" {
 
   # Cleanup on destroy
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "helm uninstall aws-load-balancer-controller -n kube-system || true"
   }
 }
@@ -111,9 +111,9 @@ resource "null_resource" "install_alb_controller" {
 # Install Cluster Autoscaler
 resource "null_resource" "install_cluster_autoscaler" {
   count = var.enable_cluster_autoscaler ? 1 : 0
-  
+
   depends_on = [module.eks, time_sleep.wait_for_cluster]
-  
+
   provisioner "local-exec" {
     command = <<-EOF
       # Configure kubectl
@@ -137,7 +137,7 @@ resource "null_resource" "install_cluster_autoscaler" {
 
   # Cleanup on destroy
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "helm uninstall cluster-autoscaler -n kube-system || true"
   }
 }
@@ -145,9 +145,9 @@ resource "null_resource" "install_cluster_autoscaler" {
 # Install Metrics Server
 resource "null_resource" "install_metrics_server" {
   count = var.enable_metrics_server ? 1 : 0
-  
+
   depends_on = [module.eks, time_sleep.wait_for_cluster]
-  
+
   provisioner "local-exec" {
     command = <<-EOF
       # Configure kubectl
@@ -166,7 +166,7 @@ resource "null_resource" "install_metrics_server" {
 
   # Cleanup on destroy
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "helm uninstall metrics-server -n kube-system || true"
   }
 }
@@ -174,15 +174,15 @@ resource "null_resource" "install_metrics_server" {
 # Install Fluent Bit
 resource "null_resource" "install_fluent_bit" {
   count = var.enable_fluentbit ? 1 : 0
-  
+
   depends_on = [
-    module.eks, 
+    module.eks,
     time_sleep.wait_for_cluster,
     aws_cloudwatch_log_group.application_logs,
     aws_cloudwatch_log_group.system_logs,
     aws_cloudwatch_log_group.dataplane_logs
   ]
-  
+
   provisioner "local-exec" {
     command = <<-EOF
       # Configure kubectl
@@ -209,3 +209,10 @@ resource "null_resource" "install_fluent_bit" {
         --version 0.46.7
     EOF
   }
+
+  # Cleanup on destroy
+  provisioner "local-exec" {
+    when    = destroy
+    command = "helm uninstall fluent-bit -n amazon-cloudwatch || true"
+  }
+}
