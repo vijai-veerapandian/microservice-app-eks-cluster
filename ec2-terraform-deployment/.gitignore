@@ -1,0 +1,21 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Terraform variables (keep sensitive values out of Git)
+terraform.tfvars
+*.auto.tfvars
+
+# SSH Keys (NEVER commit these!)
+*.pem
+*.ppk
+id_rsa*
+*.key
+
+# Local SSH config
+~/.ssh/
+
+# Logs
+*.log
