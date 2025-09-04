@@ -239,7 +239,7 @@ resource "null_resource" "docker_kubectl_setup" {
       # Verify kubectl installation
       "kubectl version --client",
 
-      # Install AWS CLI (useful for EKS integration)
+      # Install AWS CLI
       "echo 'Installing AWS CLI...'",
       "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'",
       "sudo apt-get install unzip -y",
@@ -247,6 +247,16 @@ resource "null_resource" "docker_kubectl_setup" {
       "sudo ./aws/install",
       "rm -rf awscliv2.zip aws/", # Clean up
       "aws --version",
+
+      # Install Terraform 
+      "echo 'Installing Terraform...'",
+      "TERRAFORM_VERSION='1.13.1'",
+      "wget https://releases.hashicorp.com/terraform/$${TERRAFORM_VERSION}/terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
+      "unzip terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
+      "sudo mv terraform /usr/local/bin/",
+      "sudo chmod +x /usr/local/bin/terraform",
+      "rm terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
+      "terraform --version",
 
       # Create kubectl config directory for ubuntu user
       "mkdir -p /home/ubuntu/.kube",
