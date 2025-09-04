@@ -1,421 +1,320 @@
-# Microservice App EKS Cluster
+# Microservice App on AWS EKS
 
-## Technical Stack 
+Building and deploying a Flask API with Nginx proxy to AWS EKS using Terraform. This project walks through setting up the entire infrastructure from scratch and deploying a real application.
 
-Deploying containerized applications into AWS EKS using Terraform with secure infrastructure practices.
+## What We're Building
+
+- **Flask API** - Simple REST API with health check endpoints
+- **Nginx Proxy** - Routes traffic to our API
+- **EKS Cluster** - Managed Kubernetes on AWS
+- **Application Load Balancer** - Routes internet traffic to our app
+- **EC2 Instance** - Development box with all tools pre-installed
 
 ---
 
-## Prerequisites Installation
+## Getting Started
 
-### Step 1: Download and Install AWS CLI v2
+### Install Required Tools
 
+First, let's get the tools we need installed on your local machine.
+
+**AWS CLI v2:**
 ```bash
-# Download AWS CLI v2
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-
-# Extract the installer
 unzip awscliv2.zip
-
-# Run the installer
 sudo ./aws/install
-
-# Verify installation
 aws --version
-# Expected output: aws-cli/2.28.21 Python/3.13.7 Linux/6.15.9-arch1-1 exe/x86_64.arch
-
-# Cleanup
 rm -rf awscliv2.zip aws/
 ```
 
-### Step 2: Terraform Installation 
-
+**Terraform:**
 ```bash
-# Set Terraform version (check for latest at https://releases.hashicorp.com/terraform/)
 TERRAFORM_VERSION="1.13.1"
-
-# Download Terraform
 wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-
-# Extract and install
 unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 sudo mv terraform /usr/local/bin/
-
-# Make executable
 sudo chmod +x /usr/local/bin/terraform
-
-# Clean up
 rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-
-# Verify installation
 terraform --version
-# Expected output: Terraform v1.13.1
 ```
 
-### Step 3: kubectl Installation 
-
+**kubectl:**
 ```bash
-# Download the latest stable version
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-
-# Make executable and move to PATH
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
-
-# Verify installation
 kubectl version --client
 ```
 
----
+### AWS Account Setup
 
-## AWS Setup
+You'll need an AWS account and a user with the right permissions.
 
-### Step 4: AWS IAM User Creation for Terraform
+1. Go to AWS Console → IAM → Users → Create user
+2. Username: `terraform-user` (or whatever you prefer)
+3. Attach the `AdministratorAccess` policy (for learning - use more specific policies in production)
+4. Create access key and save the credentials
 
-1. **Login to AWS Console**: Go to https://console.aws.amazon.com/
-2. **Navigate to IAM**: Search for "IAM" in services
-3. **Create User**:
-   - Click "Users" → "Create user"
-   - Username: `terraform-eks-user`
-
-4. **Attach Policies** (Select "Attach existing policies directly"):
-   - **For Learning/Testing**: `AdministratorAccess`
-   - **For Production**: Use these specific policies:
-     - `AmazonEKSClusterPolicy`
-     - `AmazonEKSWorkerNodePolicy`
-     - `AmazonEKS_CNI_Policy`
-     - `AmazonEC2ContainerRegistryReadOnly`
-     - `IAMFullAccess`
-     - `AmazonVPCFullAccess`
-     - `AmazonEC2FullAccess`
-
-5. **Create Access Key**: After user creation, create access key and copy the credentials
-
-### Step 5: Configure AWS CLI
-
+Configure your AWS CLI:
 ```bash
 aws configure
-# AWS Access Key ID [None]: your-access-key-id
-# AWS Secret Access Key [None]: your-secret-access-key
-# Default region name [None]: us-west-2
-# Default output format [None]: json
+# Enter your access key, secret key, region (us-east-1), and format (json)
 ```
 
 ---
 
-## Phase 1: Infrastructure Deployment
+## Phase 1: Setting Up Infrastructure
 
-### Step 6: Deploy EKS Cluster using Terraform
+### Step 1: Deploy Your Development EC2 Instance
 
-#### 6.1: Navigate to EKS Terraform Directory
+We'll start by creating an EC2 instance that has all our tools pre-installed.
+
+Create a key pair first:
 ```bash
-cd eks-terraform-deployment/
+aws ec2 create-key-pair --key-name my-key --region us-east-1 --query 'KeyMaterial' --output text > ~/.ssh/my-key.pem
+chmod 600 ~/.ssh/my-key.pem
 ```
 
-#### 6.2: Update Configuration
-Update `terraform.tfvars` with your specific values:
+Navigate to the EC2 terraform folder and set up your config:
+```bash
+cd ec2-terraform-deployment/
+```
+
+Edit `terraform.tfvars`:
 ```hcl
-# AWS Configuration
-aws_region = "us-west-2"
-environment = "dev"
-
-# EKS Cluster Configuration
-cluster_name = "my-eks-cluster"
-cluster_version = "1.28"
-
-# Node Group Configuration  
-node_group_min_size = 2
-node_group_max_size = 6
-node_group_desired_size = 3
-
-# Add-ons Configuration
-enable_alb_controller = true
-enable_cluster_autoscaler = true
-enable_metrics_server = true
-enable_fluentbit = true
-```
-
-#### 6.3: Deploy EKS Infrastructure
-```bash
-# Initialize Terraform
-terraform init
-
-# Review the plan
-terraform plan
-
-# Deploy the infrastructure
-terraform apply -auto-approve
-```
-
-#### 6.4: Configure kubectl for EKS
-```bash
-# Update kubeconfig
-aws eks --region us-west-2 update-kubeconfig --name my-eks-cluster
-
-# Verify cluster access
-kubectl get nodes
-
-# Check all pods
-kubectl get pods -A
-```
-
-**Expected EKS Cluster Status:**
-```
-NAME                                        STATUS   ROLES    AGE     VERSION
-ip-10-0-13-111.us-west-2.compute.internal   Ready    <none>   8m50s   v1.30.0-eks-a737599
-ip-10-0-26-54.us-west-2.compute.internal    Ready    <none>   8m29s   v1.30.0-eks-a737599
-ip-10-0-36-54.us-west-2.compute.internal    Ready    <none>   8m49s   v1.30.0-eks-a737599
-```
-
-<!-- IMAGE_PLACEHOLDER: EKS Cluster Nodes Screenshot -->
-
-### Step 7: Deploy EC2 Instance using Terraform (Secure Setup)
-
-#### 7.1: Create AWS Key Pair (Secure Method)
-```bash
-# Create key pair in your target region
-aws ec2 create-key-pair --key-name my-terraform-key --region us-west-2 --query 'KeyMaterial' --output text > ~/.ssh/my-terraform-key.pem
-
-# Set proper permissions
-chmod 600 ~/.ssh/my-terraform-key.pem
-
-# Verify key pair creation
-aws ec2 describe-key-pairs --key-names my-terraform-key --region us-west-2
-```
-
-#### 7.2: Navigate to EC2 Terraform Directory
-```bash
-cd ../ec2-terraform-deployment/
-```
-
-#### 7.3: Update EC2 Configuration
-Update `terraform.tfvars` with your key pair details:
-```hcl
-# AWS Configuration
-aws_region = "us-west-2"
-
-# VPC Configuration
+aws_region = "us-east-1"
 vpc_name = "demo_vpc"
 vpc_cidr = "10.0.0.0/16"
+instance_name = "my-dev-server"
+my_ami = "ami-04b4f1a9cf54c11d0"  # Ubuntu 22.04
 
-# EC2 Instance Configuration
-instance_name = "demo-app-server"
-my_ami = "ami-04b4f1a9cf54c11d0"  # Ubuntu 22.04 LTS
+existing_key_pair_name = "my-key"
+private_key_path = "~/.ssh/my-key.pem"
 
-# SSH Key Pair Configuration (IMPORTANT: Update these!)
-existing_key_pair_name = "my-terraform-key"
-private_key_path = "~/.ssh/my-terraform-key.pem"
-
-# Subnet Configuration
 private_subnets = {
   "private_subnet_1" = 1
 }
-
 public_subnets = {
   "public_subnet_1" = 1
 }
 ```
 
-#### 7.4: Deploy EC2 Infrastructure
+Deploy it:
 ```bash
-# Initialize Terraform
 terraform init
-
-# Review the plan
 terraform plan
-
-# Deploy the infrastructure
-terraform apply -auto-approve
+terraform apply
 ```
 
-#### 7.5: Connect to EC2 Instance
+Once it's done, connect to your new EC2 instance:
 ```bash
-# Get connection command from terraform output
-terraform output ssh_connection_command
-
-# Connect to instance
-ssh -i ~/.ssh/my-terraform-key.pem ubuntu@<public-ip>
-
-# Verify installed tools
-docker --version
-kubectl version --client
-aws --version
+ssh -i ~/.ssh/my-key.pem ubuntu@$(terraform output -raw instance_public_ip)
 ```
 
-**Expected EC2 Tools Installation:**
-- ✅ Docker and Docker Compose
-- ✅ kubectl (latest stable)
-- ✅ AWS CLI v2
-- ✅ Grafana Loki Docker plugin
+Your EC2 instance now has Docker, kubectl, AWS CLI, and Terraform ready to go!
 
-<!-- IMAGE_PLACEHOLDER: EC2 Instance Tools Verification Screenshot -->
+### Step 2: Set Up EKS from EC2
+
+Now we'll deploy our EKS cluster from the EC2 instance (this simulates how you'd do it in a real CI/CD pipeline).
+
+**On your EC2 instance:**
+
+Install GitHub CLI:
+```bash
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh -y
+```
+
+Configure AWS (use the same credentials as before):
+```bash
+aws configure
+```
+
+Clone your project:
+```bash
+gh auth login
+git clone https://github.com/your-username/your-repo.git
+cd your-repo/eks-terraform-deployment/
+```
+
+Create your EKS configuration:
+```bash
+cat > terraform.tfvars << 'EOF'
+aws_region = "us-east-1"
+environment = "dev"
+cluster_name = "my-eks-cluster"
+cluster_version = "1.30"
+vpc_cidr = "10.0.0.0/16"
+
+node_instance_types = ["t3.medium"]
+node_group_min_size = 2
+node_group_max_size = 6
+node_group_desired_size = 3
+
+enable_alb_controller = true
+enable_cluster_autoscaler = true
+enable_metrics_server = true
+enable_fluentbit = true
+log_retention_days = 30
+EOF
+```
+
+Deploy the EKS cluster (this takes about 15-20 minutes):
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+Set up kubectl access:
+```bash
+aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster
+kubectl get nodes
+```
+
+You should see something like:
+```
+NAME                                       STATUS   ROLES    AGE   VERSION
+ip-10-0-1-234.us-east-1.compute.internal   Ready    <none>   5m    v1.30.0-eks-a737599
+ip-10-0-2-345.us-east-1.compute.internal   Ready    <none>   5m    v1.30.0-eks-a737599
+ip-10-0-3-456.us-east-1.compute.internal   Ready    <none>   5m    v1.30.0-eks-a737599
+```
+
+Check that all the add-ons are running:
+```bash
+kubectl get pods -n kube-system
+```
+
+You should see the AWS Load Balancer Controller, Cluster Autoscaler, Metrics Server, and other system pods running.
 
 ---
 
-## Phase 2: Application Deployment
+## Phase 2: Deploy Your Application
 
-### Step 8: Build and Push Container Images to ECR
+### Step 3: Build and Push Container Images
 
-#### 8.1: Navigate to Application Directory
+We'll build our Flask API and Nginx proxy images and push them to AWS ECR.
+
+**Still on your EC2 instance:**
+
+Create ECR repositories:
+```bash
+aws ecr create-repository --repository-name flask-api --region us-east-1
+aws ecr create-repository --repository-name nginx-proxy --region us-east-1
+```
+
+Get your account ID and login to ECR:
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+```
+
+Build and push the images:
 ```bash
 cd ../containerization/
-```
 
-#### 8.2: Create ECR Repositories
-```bash
-# Create repositories
-aws ecr create-repository --repository-name flask-api --region us-west-2
-aws ecr create-repository --repository-name nginx-proxy --region us-west-2
-
-# Get login token
-aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-west-2.amazonaws.com
-```
-
-#### 8.3: Build and Push Images
-```bash
-# Build images
+# Build the images
 docker build -t flask-api:latest -f api-Dockerfile .
 docker build -t nginx-proxy:latest -f nginx-Dockerfile .
 
-# Tag images for ECR
-docker tag flask-api:latest <account-id>.dkr.ecr.us-west-2.amazonaws.com/flask-api:latest
-docker tag nginx-proxy:latest <account-id>.dkr.ecr.us-west-2.amazonaws.com/nginx-proxy:latest
+# Tag for ECR
+docker tag flask-api:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
+docker tag nginx-proxy:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-proxy:latest
 
-# Push images
-docker push <account-id>.dkr.ecr.us-west-2.amazonaws.com/flask-api:latest
-docker push <account-id>.dkr.ecr.us-west-2.amazonaws.com/nginx-proxy:latest
+# Push to ECR
+docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
+docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-proxy:latest
 ```
 
-### Step 9: Deploy Application to EKS with ALB
+### Step 4: Deploy to Kubernetes
 
-#### 9.1: Deploy Application Manifests
+Now let's deploy our application to the EKS cluster with an Application Load Balancer.
+
+Create a namespace:
 ```bash
-# Apply namespace
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: my-app
-EOF
-
-# Deploy API and Nginx services
-kubectl apply -f api-deployment.yaml
-kubectl apply -f nginx-deployment.yaml
-
-# Deploy ALB Ingress
-kubectl apply -f ingress-alb.yaml
+kubectl create namespace my-app
 ```
 
-#### 9.2: Verify Application Deployment
+Deploy your application (you'll need to update the image URLs in your YAML files):
 ```bash
-# Check application pods
+kubectl apply -f api-deployment.yaml -n my-app
+kubectl apply -f nginx-deployment.yaml -n my-app
+kubectl apply -f ingress-alb.yaml -n my-app
+```
+
+Check that everything is running:
+```bash
 kubectl get pods -n my-app
-
-# Check services
 kubectl get services -n my-app
-
-# Check ALB Ingress
 kubectl get ingress -n my-app
-
-# Get ALB URL
-kubectl get ingress app-ingress -n my-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 ```
 
-<!-- IMAGE_PLACEHOLDER: Application Pods Running Screenshot -->
-<!-- IMAGE_PLACEHOLDER: ALB Ingress Details Screenshot -->
-
----
-
-## Verification and Testing
-
-### Step 10: Test Application Access
-
-#### 10.1: Test via ALB (Application Load Balancer)
+Get your Application Load Balancer URL:
 ```bash
-# Get ALB URL
-ALB_URL=$(kubectl get ingress app-ingress -n my-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+kubectl get ingress -n my-app -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
+```
 
-# Test application endpoints
+### Step 5: Test Your Application
+
+Test your API:
+```bash
+ALB_URL=$(kubectl get ingress -n my-app -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
 curl http://$ALB_URL/
 curl http://$ALB_URL/api/v1/status
 ```
 
-#### 10.2: Test via EC2 Instance
-```bash
-# SSH to EC2 instance
-ssh -i ~/.ssh/my-terraform-key.pem ubuntu@<ec2-public-ip>
-
-# Test Docker containers
-docker ps
-
-# Test kubectl access to EKS
-kubectl get nodes
-kubectl get pods -n my-app
-```
-
-<!-- IMAGE_PLACEHOLDER: Application Response Screenshots -->
+You should get responses from your Flask API!
 
 ---
 
-## Architecture Overview
+## What You've Built
 
-### Current Infrastructure:
-- ✅ **EKS Cluster** with managed node groups
-- ✅ **Application Load Balancer** for traffic distribution
-- ✅ **VPC** with public/private subnets
-- ✅ **EC2 Development Instance** with Docker and kubectl
-- ✅ **ECR** for container image registry
-- ✅ **CloudWatch Logging** with Fluent Bit
-- ✅ **Auto-scaling** with Cluster Autoscaler
+At this point, you have:
 
-### Security Features:
-- ✅ **No private keys in Git** (using existing AWS key pairs)
-- ✅ **IRSA** (IAM Roles for Service Accounts) for secure addon permissions
-- ✅ **Encrypted EBS volumes**
-- ✅ **VPC network isolation**
-- ✅ **Security groups** with minimal required access
+- **EKS Cluster** with auto-scaling worker nodes
+- **Application Load Balancer** distributing traffic
+- **Containerized Flask API** running in Kubernetes
+- **Nginx proxy** handling requests
+- **CloudWatch logging** collecting all your logs
+- **Development EC2 instance** with all tools ready
 
-<!-- IMAGE_PLACEHOLDER: Architecture Diagram -->
+## Cleaning Up
 
----
+When you're done experimenting, clean up to avoid charges:
 
-## Cleanup
-
-### To destroy all resources:
 ```bash
-# Destroy EKS cluster
-cd eks-terraform-deployment/
-terraform destroy -auto-approve
+# From your EC2 instance, destroy the EKS cluster
+cd ~/your-repo/eks-terraform-deployment/
+terraform destroy
 
-# Destroy EC2 infrastructure  
-cd ../ec2-terraform-deployment/
-terraform destroy -auto-approve
+# From your local machine, destroy the EC2 instance
+cd ec2-terraform-deployment/
+terraform destroy
 
-# Delete ECR repositories (optional)
+# Delete ECR repositories if you want
 aws ecr delete-repository --repository-name flask-api --region us-east-1 --force
 aws ecr delete-repository --repository-name nginx-proxy --region us-east-1 --force
 ```
 
----
-
 ## Troubleshooting
 
-### Common Issues:
+**EKS cluster not accessible?**
+Make sure you ran the `aws eks update-kubeconfig` command from the same machine where you deployed the cluster.
 
-1. **Key Pair Not Found**: Ensure key pair exists in the correct region
-2. **kubectl Access Denied**: Run `aws eks update-kubeconfig` command
-3. **ALB Not Creating**: Check AWS Load Balancer Controller logs
-4. **Pods Not Starting**: Check ECR image URLs and permissions
+**Pods not starting?**
+Check the image URLs in your deployment files match what you pushed to ECR.
 
-### Useful Commands:
+**ALB not creating?**
+The AWS Load Balancer Controller takes a few minutes to create the ALB. Check the controller logs:
 ```bash
-# Check EKS cluster status
-aws eks describe-cluster --name my-eks-cluster --region us-west-2
-
-# Check ALB Controller logs
 kubectl logs -n kube-system deployment/aws-load-balancer-controller
-
-# Check application logs
-kubectl logs -n my-app deployment/api-deployment
-kubectl logs -n my-app deployment/nginx-deployment
 ```
+
+**Can't connect to EC2?**
+Make sure your security group allows SSH (port 22) and you're using the right key pair.
+
+---
+
+This project gives you hands-on experience with modern cloud-native development practices. You're deploying real infrastructure and applications the same way teams do in production!
