@@ -19,25 +19,27 @@ module "eks" {
   # Essential AWS add-ons only
   cluster_addons = {
     coredns = {
-      most_recent = true
+      addon_version = "v1.11.1-eksbuild.9"
     }
     kube-proxy = {
-      most_recent = true
+      addon_version = "v1.30.0-eksbuild.2"
     }
     vpc-cni = {
-      most_recent = true
+      addon_version = "v1.18.1-eksbuild.1"
     }
     aws-load-balancer-controller = {
-      most_recent = true
+      addon_version = "v2.7.2-eksbuild.1"
     }
     cluster-autoscaler = {
-      most_recent = true
+      addon_version = "v1.30.0-eksbuild.1"
     }
     aws-for-fluent-bit = {
-      most_recent = true
+      addon_version = "v0.1.40-eksbuild.1"
     }
     metrics-server = {
-      most_recent = true
+      # Note: metrics-server is not an official AWS managed addon.
+      # The EKS module deploys it via a Helm chart.
+      # We can leave this as is, or specify a chart version if needed.
     }
   }
 

@@ -15,12 +15,8 @@ output "oidc_provider_url" {
   value = module.eks.cluster_oidc_issuer_url
 }
 
-data "aws_iam_openid_connect_provider" "oidc" {
-  url = module.eks.cluster_oidc_issuer_url
-}
-
 output "oidc_provider_arn" {
-  value = data.aws_iam_openid_connect_provider.oidc.arn
+  value = module.eks.oidc_provider_arn
 }
 
 # Managed node groups
