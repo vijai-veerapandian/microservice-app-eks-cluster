@@ -75,10 +75,7 @@ output "public_subnets" {
 # =====================================================================
 # AWS Region and Availability Zones
 # =====================================================================
-output "aws_region" {
-  description = "AWS region where resources are deployed"
-  value       = data.aws_region.current.id
-}
+
 
 output "availability_zones" {
   description = "List of availability zones used"
