@@ -136,7 +136,7 @@ Clone your project:
 ```bash
 gh auth login
 git clone https://github.com/your-username/your-repo.git
-cd your-repo/eks-terraform-deployment/
+cd microservice-app-eks-cluster/eks-terraform-deployment/
 ```
 
 Create your EKS configuration:
@@ -286,7 +286,7 @@ When you're done experimenting, clean up to avoid charges:
 
 ```bash
 # From your EC2 instance, destroy the EKS cluster
-cd ~/your-repo/eks-terraform-deployment/
+cd ~/microservice-app-eks-cluster/eks-terraform-deployment/
 terraform destroy
 
 # From your local machine, destroy the EC2 instance
