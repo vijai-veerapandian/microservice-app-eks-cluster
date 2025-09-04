@@ -230,9 +230,8 @@ resource "aws_instance" "demo_app" {
     Name      = var.instance_name
   }
 }
-
-# Docker setup using remote-exec provisioner
-resource "null_resource" "docker_setup" {
+# Docker and kubectl setup using remote-exec provisioner
+resource "null_resource" "docker_kubectl_setup" {
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
@@ -244,7 +243,11 @@ resource "null_resource" "docker_setup" {
     inline = [
       "set -e", # Stop on the first error
       "set -x", # Print each command before execution
+
+      # Update system
       "sudo apt update",
+
+      # Install Docker
       "curl -fsSL https://get.docker.com -o get-docker.sh",
       "sudo sh get-docker.sh",
       "sudo systemctl enable docker",
@@ -254,9 +257,38 @@ resource "null_resource" "docker_setup" {
       "docker --version",
       "docker-compose --version",
       "sleep 10",
+
+      # Install Loki Docker plugin
       "sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions",
       "sudo docker plugin ls",
       "sleep 5",
+
+      # Install kubectl
+      "echo 'Installing kubectl...'",
+      "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
+      "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
+      "rm kubectl", # Clean up the downloaded file
+
+      # Verify kubectl installation
+      "kubectl version --client",
+
+      # Install AWS CLI (useful for EKS integration)
+      "echo 'Installing AWS CLI...'",
+      "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'",
+      "sudo apt-get install unzip -y",
+      "unzip awscliv2.zip",
+      "sudo ./aws/install",
+      "rm -rf awscliv2.zip aws/", # Clean up
+      "aws --version",
+
+      # Create kubectl config directory for ubuntu user
+      "mkdir -p /home/ubuntu/.kube",
+      "sudo chown ubuntu:ubuntu /home/ubuntu/.kube",
+
+      "echo 'Docker and kubectl installation completed successfully!'",
+      "echo 'Docker version:' && docker --version",
+      "echo 'kubectl version:' && kubectl version --client",
+      "echo 'AWS CLI version:' && aws --version"
     ]
   }
 

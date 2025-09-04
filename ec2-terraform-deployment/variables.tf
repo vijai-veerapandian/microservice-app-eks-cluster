@@ -48,3 +48,49 @@ variable "ssh_private_key_path" {
   type        = string
 }
 */
+
+
+variable "instance_type" {
+  type        = string
+  description = "EC2 instance type"
+  default     = "t2.micro"
+
+  validation {
+    condition     = can(regex("^[a-z][0-9][a-z]?\\.[a-z]+$", var.instance_type))
+    error_message = "Instance type must be in the format like 't2.micro', 't3.small', etc."
+  }
+}
+
+variable "common_tags" {
+  type        = map(string)
+  description = "Common tags to apply to all resources"
+  default = {
+    Environment = "demo"
+    Project     = "terraform-docker-kubectl"
+    Owner       = "devops-team"
+    Terraform   = "true"
+  }
+}
+
+variable "install_kubectl" {
+  type        = bool
+  description = "Whether to install kubectl on the EC2 instance"
+  default     = true
+}
+
+variable "install_aws_cli" {
+  type        = bool
+  description = "Whether to install AWS CLI on the EC2 instance"
+  default     = true
+}
+
+variable "root_volume_size" {
+  type        = number
+  description = "Size of the root EBS volume in GB"
+  default     = 20
+
+  validation {
+    condition     = var.root_volume_size >= 8 && var.root_volume_size <= 1000
+    error_message = "Root volume size must be between 8 and 1000 GB."
+  }
+}
