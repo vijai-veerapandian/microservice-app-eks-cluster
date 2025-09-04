@@ -14,8 +14,21 @@ terraform.tfvars
 id_rsa*
 *.key
 
+# Remove any existing key files from tracking
+ec2awskey.pem
+
 # Local SSH config
 ~/.ssh/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # Logs
 *.log

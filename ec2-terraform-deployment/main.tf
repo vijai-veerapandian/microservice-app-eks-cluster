@@ -8,8 +8,7 @@
 # 8 Define Route table for public subnet
 # 9 Define Route table for private subnet
 # 10 Associate the Route table with the public and private subnet
-# 11 Define SSH Key generation for AWS EC2 instance
-# 12 Deploy AWS EC2 instance
+# 11 Deploy AWS EC2 instance
 
 # 1 Retrieve the list of AZs in the current AWS region
 data "aws_availability_zones" "available" {}
@@ -184,38 +183,6 @@ resource "aws_route_table_association" "private" {
   subnet_id      = each.value.id
 }
 
-# 11 Define SSH Key generation for AWS EC2 instance
-
-resource "local_file" "private_key_pem" {
-  content         = tls_private_key.generated.private_key_pem
-  filename        = "ec2awskey.pem"
-  file_permission = "0600"
-}
-
-resource "tls_private_key" "generated" {
-  algorithm = "RSA"
-}
-
-resource "aws_key_pair" "generated" {
-  key_name   = "ec2awskey"
-  public_key = tls_private_key.generated.public_key_openssh
-
-  lifecycle {
-    ignore_changes = [key_name]
-  }
-}
-
-resource "null_resource" "set_key_permission" {
-  triggers = {
-    key_pem = tls_private_key.generated.private_key_pem
-  }
-
-  provisioner "local-exec" {
-    command = "chmod 600 ec2awskey.pem"
-  }
-  depends_on = [local_file.private_key_pem]
-}
-
 # 12 Deploy AWS EC2 instance
 
 resource "aws_instance" "demo_app" {
@@ -223,7 +190,7 @@ resource "aws_instance" "demo_app" {
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnets["public_subnet_1"].id
   vpc_security_group_ids = [aws_security_group.demo_sg.id]
-  key_name               = aws_key_pair.generated.key_name
+  key_name               = var.existing_key_pair_name
 
   tags = {
     Terraform = "true"
@@ -293,8 +260,4 @@ resource "null_resource" "docker_kubectl_setup" {
   }
 
   depends_on = [aws_instance.demo_app]
-}
-
-provider "aws" {
-  region = var.aws_region
 }
