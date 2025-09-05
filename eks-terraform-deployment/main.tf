@@ -1,6 +1,3 @@
-# =====================================================================
-# EKS Cluster
-# =====================================================================
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
@@ -19,10 +16,7 @@ module "eks" {
   # Enable EKS control plane logging
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  # AWS Auth ConfigMap
-
-
-  # Only official AWS managed add-ons
+  # Essential AWS managed add-ons only
   cluster_addons = {
     coredns = {
       addon_version     = "v1.11.3-eksbuild.1"
@@ -42,7 +36,7 @@ module "eks" {
     }
   }
 
-  # Use variables for node group configuration
+  # Simple node group configuration
   eks_managed_node_groups = {
     main = {
       min_size       = var.node_group_min_size
@@ -52,12 +46,6 @@ module "eks" {
 
       # Use latest EKS optimized AMI
       ami_type = "AL2_x86_64"
-
-      # Enable cluster autoscaler tags
-      tags = merge(local.tags, {
-        "k8s.io/cluster-autoscaler/enabled"       = "true"
-        "k8s.io/cluster-autoscaler/${local.name}" = "owned"
-      })
     }
   }
 
