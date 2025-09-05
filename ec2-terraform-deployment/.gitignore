@@ -3,6 +3,7 @@
 *.tfstate
 *.tfstate.backup
 .terraform.lock.hcl
+ec2plan
 
 # Terraform variables (keep sensitive values out of Git)
 terraform.tfvars

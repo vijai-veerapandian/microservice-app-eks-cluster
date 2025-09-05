@@ -270,7 +270,10 @@ resource "null_resource" "docker_kubectl_setup" {
       # Install Helm
       "sudo apt-get install curl -y",
       "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash",
-      "helm version"
+      "helm version",
+
+      # Install gh
+      "sudo apt-get install gh -y"
     ]
   }
 
