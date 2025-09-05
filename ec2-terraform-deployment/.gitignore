@@ -6,7 +6,7 @@
 ec2plan
 
 # Terraform variables (keep sensitive values out of Git)
-terraform.tfvars
+#terraform.tfvars
 *.auto.tfvars
 
 # SSH Keys (NEVER commit these!)
