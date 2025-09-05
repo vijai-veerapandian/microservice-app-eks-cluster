@@ -25,20 +25,20 @@ output "oidc_provider_arn" {
 
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = module.vpc.vpc_id
+  value       = data.aws_vpc.existing.id
 }
 
 output "private_subnets" {
   description = "List of IDs of private subnets"
-  value       = module.vpc.private_subnets
+  value       = concat(data.aws_subnets.private.ids, aws_subnet.eks_private_subnets[*].id)
 }
 
 output "public_subnets" {
   description = "List of IDs of public subnets"
-  value       = module.vpc.public_subnets
+  value       = data.aws_subnets.public.ids
 }
 
 output "kubectl_config_command" {
   description = "Command to configure kubectl"
-  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
+  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name} --profile ${var.aws_profile}"
 }
