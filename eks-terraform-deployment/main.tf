@@ -19,6 +19,17 @@ module "eks" {
   # Enable EKS control plane logging
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
+  # AWS Auth ConfigMap
+
+  manage_aws_auth_configmap = true
+  aws_auth_users = [
+    {
+      userarn  = data.aws_caller_identity.current.arn
+      username = "admin"
+      groups   = ["system:masters"]
+    }
+  ]
+
   # Only official AWS managed add-ons
   cluster_addons = {
     coredns = {
