@@ -1,4 +1,5 @@
 aws_region  = "us-east-1"
+aws_profile = "ec2-eks-app"
 environment = "dev"
 
 # EKS Cluster Configuration

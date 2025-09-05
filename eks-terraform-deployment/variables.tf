@@ -4,6 +4,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use for authentication"
+  type        = string
+  default     = "default"
+}
+
 variable "environment" {
   description = "Environment tag for resources (dev, staging, prod)"
   type        = string
