@@ -21,14 +21,6 @@ module "eks" {
 
   # AWS Auth ConfigMap
 
-  manage_aws_auth_configmap = true
-  aws_auth_users = [
-    {
-      userarn  = data.aws_caller_identity.current.arn
-      username = "admin"
-      groups   = ["system:masters"]
-    }
-  ]
 
   # Only official AWS managed add-ons
   cluster_addons = {
