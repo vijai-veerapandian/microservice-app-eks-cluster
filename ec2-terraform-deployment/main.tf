@@ -265,7 +265,12 @@ resource "null_resource" "docker_kubectl_setup" {
       "echo 'Docker and kubectl installation completed successfully!'",
       "echo 'Docker version:' && docker --version",
       "echo 'kubectl version:' && kubectl version --client",
-      "echo 'AWS CLI version:' && aws --version"
+      "echo 'AWS CLI version:' && aws --version",
+
+      # Install Helm
+      "sudo apt-get install curl -y",
+      "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash",
+      "helm version"
     ]
   }
 
