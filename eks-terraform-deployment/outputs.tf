@@ -104,6 +104,11 @@ output "cloudwatch_log_groups" {
   } : {}
 }
 
+output "cluster_creator_arn" {
+  description = "ARN of the identity that created/manages the cluster"
+  value       = data.aws_caller_identity.current.arn
+}
+
 # =====================================================================
 # Add-on Status Outputs
 # =====================================================================
