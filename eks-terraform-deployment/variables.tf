@@ -37,6 +37,16 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+variable "existing_vpc_id" {
+  description = "ID of the existing VPC to use for EKS"
+  type        = string
+}
+
+variable "ec2_iam_role_arn" {
+  description = "ARN of the EC2 IAM role for EKS access"
+  type        = string
+}
+
 variable "node_instance_types" {
   description = "EC2 instance types for the node group"
   type        = list(string)

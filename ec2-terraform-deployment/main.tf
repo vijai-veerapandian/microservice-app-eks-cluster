@@ -8,7 +8,8 @@
 # 8 Define Route table for public subnet
 # 9 Define Route table for private subnet
 # 10 Associate the Route table with the public and private subnet
-# 11 Deploy AWS EC2 instance
+# 11 Associate IAM Role with EC2 instance also with EKS later
+# 12 Deploy AWS EC2 instance
 
 # 1 Retrieve the list of AZs in the current AWS region
 data "aws_availability_zones" "available" {}
@@ -28,38 +29,6 @@ resource "aws_security_group" "demo_sg" {
   name        = "demo_security_group"
   description = "demo security group"
   vpc_id      = aws_vpc.demo_vpc.id
-
-  # ingress {
-  #   from_port   = 22
-  #   to_port     = 22
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  #   description = "Allow ssh inbound traffic"
-  # }
-
-  # ingress {
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  #   description = "Allow http inbound traffic"
-  # }
-
-  #   ingress {
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  #   description = "Allow https inbound traffic"
-  # }
-
-  # egress {
-  #   from_port   = 0
-  #   to_port     = 0
-  #   protocol    = "-1"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  #   description = "Allow all outbound traffic"
-  # }
 
   ingress {
     from_port   = 0
@@ -183,6 +152,84 @@ resource "aws_route_table_association" "private" {
   subnet_id      = each.value.id
 }
 
+# 11 Associate IAM Role with EC2 instance also with EKS later
+
+resource "aws_iam_role" "ec2_eks_admin_role" {
+  name = "ec2-eks-admin-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "EC2-EKS-Admin-Role"
+    Environment = "dev"
+  }
+}
+
+# Custom policy for EKS administration
+resource "aws_iam_policy" "eks_admin_policy" {
+  name        = "EKS-Admin-Policy"
+  description = "Policy for EC2 to manage EKS clusters"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:*",
+          "ec2:DescribeAccountAttributes",
+          "ec2:DescribeAddresses",
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeInternetGateways",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DescribeRouteTables",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeAvailabilityZones",
+          "iam:ListRoles",
+          "iam:ListInstanceProfiles",
+          "iam:PassRole",
+          "iam:GetRole",
+          "iam:CreateServiceLinkedRole",
+          "logs:*",
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeScalingActivities",
+          "cloudformation:*",
+          "kms:DescribeKey",
+          "kms:ListKeys"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the custom policy to the role
+resource "aws_iam_role_policy_attachment" "eks_admin_policy_attachment" {
+  role       = aws_iam_role.ec2_eks_admin_role.name
+  policy_arn = aws_iam_policy.eks_admin_policy.arn
+}
+
+# Create instance profile
+resource "aws_iam_instance_profile" "ec2_eks_profile" {
+  name = "ec2-eks-admin-profile"
+  role = aws_iam_role.ec2_eks_admin_role.name
+}
+
 # 12 Deploy AWS EC2 instance
 
 resource "aws_instance" "demo_app" {
@@ -191,6 +238,7 @@ resource "aws_instance" "demo_app" {
   subnet_id              = aws_subnet.public_subnets["public_subnet_1"].id
   vpc_security_group_ids = [aws_security_group.demo_sg.id]
   key_name               = var.existing_key_pair_name
+  iam_instance_profile   = aws_iam_instance_profile.ec2_eks_profile.name
 
   tags = {
     Terraform = "true"

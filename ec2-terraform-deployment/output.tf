@@ -31,6 +31,21 @@ output "installed_tools" {
   description = "List of tools installed on the EC2 instance"
 }
 
+output "iam_role_arn" {
+  value       = aws_iam_role.ec2_eks_admin_role.arn
+  description = "ARN of the IAM role attached to EC2 for EKS access"
+}
+
+output "vpc_info" {
+  value = {
+    vpc_id          = aws_vpc.demo_vpc.id
+    vpc_cidr        = aws_vpc.demo_vpc.cidr_block
+    public_subnets  = [for subnet in aws_subnet.public_subnets : subnet.id]
+    private_subnets = [for subnet in aws_subnet.private_subnets : subnet.id]
+  }
+  description = "VPC information to use in EKS deployment"
+}
+
 output "vpc_id" {
   value       = aws_vpc.demo_vpc.id
   description = "ID of the created VPC"
