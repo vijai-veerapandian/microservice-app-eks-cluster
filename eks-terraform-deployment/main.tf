@@ -48,6 +48,9 @@ module "eks" {
       instance_types = var.node_instance_types
 
       ami_type = "AL2_x86_64"
+
+      # Ensure nodes are distributed across multiple AZs
+      subnet_ids = concat(data.aws_subnets.private.ids, aws_subnet.eks_private_subnets[*].id)
     }
   }
 

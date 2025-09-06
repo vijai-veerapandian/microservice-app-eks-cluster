@@ -27,12 +27,12 @@ data "aws_subnets" "public" {
   }
 }
 
-# If you need additional private subnets for EKS, create them
+# Create additional private subnets for EKS in different AZs
 resource "aws_subnet" "eks_private_subnets" {
-  count             = length(local.azs) > length(data.aws_subnets.private.ids) ? length(local.azs) - length(data.aws_subnets.private.ids) : 0
+  count             = 2
   vpc_id            = var.existing_vpc_id
   cidr_block        = cidrsubnet(data.aws_vpc.existing.cidr_block, 8, count.index + 10)
-  availability_zone = local.azs[count.index + length(data.aws_subnets.private.ids)]
+  availability_zone = local.azs[count.index]
 
   map_public_ip_on_launch = false
 
@@ -43,12 +43,9 @@ resource "aws_subnet" "eks_private_subnets" {
   })
 }
 
-# Route table association for new EKS subnets (if created)
-data "aws_route_table" "private" {
-  filter {
-    name   = "vpc-id"
-    values = [var.existing_vpc_id]
-  }
+# Get the existing private route table to associate new subnets
+data "aws_route_tables" "private" {
+  vpc_id = var.existing_vpc_id
 
   filter {
     name   = "tag:Name"
@@ -56,8 +53,9 @@ data "aws_route_table" "private" {
   }
 }
 
+# Associate new EKS subnets with the existing private route table
 resource "aws_route_table_association" "eks_private" {
   count          = length(aws_subnet.eks_private_subnets)
   subnet_id      = aws_subnet.eks_private_subnets[count.index].id
-  route_table_id = data.aws_route_table.private.id
+  route_table_id = data.aws_route_tables.private.ids[0]
 }
