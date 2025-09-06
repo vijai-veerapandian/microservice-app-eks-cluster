@@ -204,13 +204,22 @@ resource "aws_iam_policy" "eks_admin_policy" {
           "iam:PassRole",
           "iam:GetRole",
           "iam:CreateServiceLinkedRole",
+          "iam:CreatePolicy",             # NEW
+          "iam:GetPolicy",                # NEW
+          "iam:AttachRolePolicy",         # NEW
+          "iam:DetachRolePolicy",         # NEW
+          "iam:CreateRole",               # NEW
+          "iam:TagRole",                  # NEW
+          "iam:ListAttachedRolePolicies", # NEW
           "logs:*",
           "autoscaling:DescribeAutoScalingGroups",
           "autoscaling:DescribeLaunchConfigurations",
           "autoscaling:DescribeScalingActivities",
           "cloudformation:*",
           "kms:DescribeKey",
-          "kms:ListKeys"
+          "kms:ListKeys",
+          "ecr:*",                 # NEW
+          "elasticloadbalancing:*" # NEW
         ]
         Resource = "*"
       }
