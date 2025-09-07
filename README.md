@@ -137,7 +137,7 @@ Now from the EC2 instance, we'll deploy the EKS cluster.
    
    # Use actual values from EC2 terraform output
    existing_vpc_id = "vpc-xxxxxxxxx"  # Replace with actual VPC ID
-   ec2_iam_role_arn = "arn:aws:iam::800216803559:role/ec2-eks-admin-role"
+   ec2_iam_role_arn = "arn:aws:iam::AWSACCOUNT:role/ec2-eks-admin-role"
    
    # Node Group Configuration
    node_instance_types     = ["t3.medium"]
