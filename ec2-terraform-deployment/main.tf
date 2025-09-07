@@ -333,13 +333,13 @@ resource "null_resource" "docker_kubectl_setup" {
       "sudo apt-get install gh -y",
 
       # Remove credentials and configure region
-      "rm -f ~/.aws/credentials",
-      "aws configure set region us-east-1",
+      #"rm -f ~/.aws/credentials",
+      #"aws configure set region us-east-1",
 
       # Ensure using instance profile
-      "echo 'Verifying AWS configuration..'",
-      "aws sts get-caller-identity",
-      "echo 'Setup completed"
+      #"echo 'Verifying AWS configuration..'",
+      #"aws sts get-caller-identity",
+      #"echo 'Setup completed"
     ]
   }
 
