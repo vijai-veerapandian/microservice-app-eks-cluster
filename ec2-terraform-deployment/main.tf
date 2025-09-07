@@ -212,6 +212,18 @@ resource "aws_iam_policy" "eks_admin_policy" {
           "iam:CreateRole",               # NEW
           "iam:TagRole",                  # NEW
           "iam:ListAttachedRolePolicies", # NEW
+          "iam:ListRolePolicies",         # 
+          "iam:GetRolePolicy",            # 
+          "iam:PutRolePolicy",            # 
+          "iam:DeleteRolePolicy",         # 
+          "iam:ListPolicyVersions",       # 
+          "iam:GetPolicyVersion",         # 
+          "iam:CreatePolicyVersion",      # 
+          "iam:DeletePolicyVersion",      # 
+          "iam:TagPolicy",                # 
+          "iam:UntagPolicy",              # 
+          "iam:TagRole",                  # 
+          "iam:UntagRole",                # 
           "logs:*",
           "autoscaling:DescribeAutoScalingGroups",
           "autoscaling:DescribeLaunchConfigurations",
