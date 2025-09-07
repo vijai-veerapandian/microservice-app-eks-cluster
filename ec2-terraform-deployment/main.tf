@@ -270,7 +270,7 @@ resource "null_resource" "tools_setup" {
 
       # Create simple AWS config with just default profile
       "echo '[default]' > ~/.aws/config",
-      "echo 'region = us-east-1' >> ~/.aws/config",
+      "echo 'region = ${var.aws_region}' >> ~/.aws/config",
 
       # DO NOT set AWS_PROFILE environment variable - let it use default
       # DO NOT create additional profiles

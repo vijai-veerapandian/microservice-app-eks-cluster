@@ -3,7 +3,7 @@
 # =====================================================================
 
 # AWS Configuration
-aws_region  = "us-east-1"
+aws_region  = "ca-central-1"
 aws_profile = "default"
 
 # VPC Configuration
@@ -20,8 +20,8 @@ public_subnets = {
 }
 
 # EC2 Instance Configuration
-instance_name = "demo1-server"
-my_ami        = "ami-04b4f1a9cf54c11d0" # Ubuntu 22.04 LTS in us-east-1
+instance_name = "demo1"
+my_ami        = "ami-0b85376b59261f42d" # Ubuntu 22.04 LTS in us-east-1
 
 # =====================================================================
 # NEW: Key Pair Configuration (add these to your variables.tf)
