@@ -155,7 +155,7 @@ resource "aws_route_table_association" "private" {
 # 11 Associate IAM Role with EC2 instance also with EKS later
 
 resource "aws_iam_role" "ec2_eks_admin_role" {
-  name = "ec2-eks-admin-role"
+  name_prefix = "ec2-eks-admin-role-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -178,7 +178,7 @@ resource "aws_iam_role" "ec2_eks_admin_role" {
 
 # Custom policy for EKS administration
 resource "aws_iam_policy" "eks_admin_policy" {
-  name        = "EKS-Admin-Policy"
+  name_prefix = "EKS-Admin-Policy-"
   description = "Policy for EC2 to manage EKS clusters"
 
   policy = jsonencode({
@@ -235,8 +235,8 @@ resource "aws_iam_role_policy_attachment" "eks_admin_policy_attachment" {
 
 # Create instance profile
 resource "aws_iam_instance_profile" "ec2_eks_profile" {
-  name = "ec2-eks-admin-profile"
-  role = aws_iam_role.ec2_eks_admin_role.name
+  name_prefix = "ec2-eks-admin-profile-"
+  role        = aws_iam_role.ec2_eks_admin_role.name
 }
 
 # 12 Deploy AWS EC2 instance
