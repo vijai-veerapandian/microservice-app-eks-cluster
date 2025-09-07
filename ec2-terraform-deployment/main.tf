@@ -268,7 +268,7 @@ resource "aws_instance" "demo_app" {
   }
 }
 # Docker and kubectl setup using remote-exec provisioner
-resource "null_resource" "docker_kubectl_setup" {
+resource "null_resource" "tools_setup" {
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
@@ -316,8 +316,6 @@ resource "null_resource" "docker_kubectl_setup" {
       "mkdir -p /home/ubuntu/.kube",
       "sudo chown ubuntu:ubuntu /home/ubuntu/.kube",
 
-      "echo 'Docker and kubectl installation completed successfully!'",
-      "echo 'Docker version:' && docker --version",
       "echo 'kubectl version:' && kubectl version --client",
       "echo 'AWS CLI version:' && aws --version",
 

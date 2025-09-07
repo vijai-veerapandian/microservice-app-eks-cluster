@@ -10,9 +10,9 @@ output "ec2_instance_id" {
   description = "ID of the EC2 instance"
 }
 
-output "docker_kubectl_setup_status" {
-  value       = "Docker, kubectl, and AWS CLI setup completed successfully on the EC2 instance"
-  description = "Status of the Docker, kubectl, and AWS CLI setup process"
+output "tools_setup_status" {
+  value       = "kubectl, and AWS CLI setup completed successfully on the EC2 instance"
+  description = "Status of the kubectl, and AWS CLI setup process"
 }
 
 output "ssh_connection_command" {
@@ -22,11 +22,8 @@ output "ssh_connection_command" {
 
 output "installed_tools" {
   value = {
-    docker         = "Latest version via get.docker.com"
-    docker_compose = "Latest version via apt"
-    kubectl        = "Latest stable version"
-    aws_cli        = "Latest AWS CLI v2"
-    loki_plugin    = "grafana/loki-docker-driver:latest"
+    kubectl = "Latest stable version"
+    aws_cli = "Latest AWS CLI v2"
   }
   description = "List of tools installed on the EC2 instance"
 }
