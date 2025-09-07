@@ -198,6 +198,7 @@ resource "aws_iam_policy" "eks_admin_policy" {
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSubnets",
           "ec2:DescribeVpcs",
+          "ec2:DescribeVpcAttribute", # NEW: Required by EKS module to read VPC details
           "ec2:DescribeAvailabilityZones",
           "iam:ListRoles",
           "iam:ListInstanceProfiles",
