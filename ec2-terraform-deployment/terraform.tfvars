@@ -20,7 +20,7 @@ public_subnets = {
 }
 
 # EC2 Instance Configuration
-instance_name = "demo1"
+instance_name = "demo1-server"
 my_ami        = "ami-04b4f1a9cf54c11d0" # Ubuntu 22.04 LTS in us-east-1
 
 # =====================================================================
