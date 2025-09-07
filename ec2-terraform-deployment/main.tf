@@ -155,7 +155,7 @@ resource "aws_route_table_association" "private" {
 # 11 Associate IAM Role with EC2 instance also with EKS later
 
 resource "aws_iam_role" "ec2_eks_admin_role" {
-  name_prefix = "ec2-eks-admin-role-"
+  name = "ec2-eks-admin-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -178,7 +178,7 @@ resource "aws_iam_role" "ec2_eks_admin_role" {
 
 # Custom policy for EKS administration
 resource "aws_iam_policy" "eks_admin_policy" {
-  name_prefix = "EKS-Admin-Policy-"
+  name        = "EKS-Admin-Policy"
   description = "Policy for EC2 to manage EKS clusters"
 
   policy = jsonencode({
@@ -198,7 +198,7 @@ resource "aws_iam_policy" "eks_admin_policy" {
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSubnets",
           "ec2:DescribeVpcs",
-          "ec2:DescribeVpcAttribute", # NEW: Required by EKS module to read VPC details
+          "ec2:DescribeVpcAttribute",
           "ec2:DescribeAvailabilityZones",
           "iam:ListRoles",
           "iam:ListInstanceProfiles",
@@ -236,8 +236,8 @@ resource "aws_iam_role_policy_attachment" "eks_admin_policy_attachment" {
 
 # Create instance profile
 resource "aws_iam_instance_profile" "ec2_eks_profile" {
-  name_prefix = "ec2-eks-admin-profile-"
-  role        = aws_iam_role.ec2_eks_admin_role.name
+  name = "ec2-eks-admin-profile"
+  role = aws_iam_role.ec2_eks_admin_role.name
 }
 
 # 12 Deploy AWS EC2 instance
@@ -333,14 +333,36 @@ resource "null_resource" "docker_kubectl_setup" {
       # Install gh
       "sudo apt-get install gh -y",
 
-      # Remove credentials and configure region
-      #"rm -f ~/.aws/credentials",
-      #"aws configure set region us-east-1",
+      # REPLACE THE COMMENTED SECTION WITH:
+      "echo 'Configuring AWS for EKS deployment...'",
+      "mkdir -p ~/.aws",
 
-      # Ensure using instance profile
-      #"echo 'Verifying AWS configuration..'",
-      #"aws sts get-caller-identity",
-      #"echo 'Setup completed"
+      # Remove any user credentials (force instance profile)
+      "rm -f ~/.aws/credentials",
+
+      # Create AWS config with profile pointing to instance profile
+      "cat > ~/.aws/config << 'EOF'",
+      "[profile ec2-eks-app]",
+      "region = us-east-1",
+      "credential_source = Ec2InstanceMetadata",
+      "",
+      "[default]",
+      "region = us-east-1",
+      "credential_source = Ec2InstanceMetadata",
+      "EOF",
+
+      # Set environment variables
+      "echo 'export AWS_PROFILE=ec2-eks-app' >> ~/.bashrc",
+      "echo 'export AWS_DEFAULT_REGION=us-east-1' >> ~/.bashrc",
+      "export AWS_PROFILE=ec2-eks-app",
+      "export AWS_DEFAULT_REGION=us-east-1",
+
+      # Test AWS configuration
+      "echo 'Testing AWS configuration...'",
+      "aws sts get-caller-identity",
+      "aws eks list-clusters || echo 'No clusters yet - expected'",
+
+      "echo 'EC2 setup completed - ready for EKS deployment!'"
     ]
   }
 
