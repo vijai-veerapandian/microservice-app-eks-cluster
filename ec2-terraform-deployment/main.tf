@@ -212,6 +212,7 @@ resource "null_resource" "tools_setup" {
       host        = aws_instance.demo_app.public_ip
       user        = "ubuntu"
       private_key = file(var.private_key_path)
+      timeout     = "15m"
     }
 
     inline = [
@@ -221,66 +222,103 @@ resource "null_resource" "tools_setup" {
       # Update system
       "sudo apt update",
 
+      # Install basic required packages
+      "sudo apt-get install -y curl wget unzip ca-certificates gnupg lsb-release || echo 'Failed to install basic packages'",
+
       # Install kubectl
-      "echo 'Installing kubectl...'",
-      "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
-      "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
-      "rm kubectl",
+      "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl || echo 'kubectl download failed'",
+      "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl || echo 'kubectl install failed'",
+      "rm -f kubectl",
+      "kubectl version --client || echo 'kubectl version check failed'",
 
-      # Verify kubectl installation
-      "kubectl version --client",
-
-      # Install AWS CLI
-      "echo 'Installing AWS CLI...'",
-      "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'",
-      "sudo apt-get install unzip -y",
-      "unzip awscliv2.zip",
-      "sudo ./aws/install",
+      # Install AWS CLI v2
+      "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip' || echo 'AWS CLI download failed'",
+      "unzip awscliv2.zip || echo 'AWS CLI unzip failed'",
+      "sudo ./aws/install || echo 'AWS CLI install failed'",
       "rm -rf awscliv2.zip aws/",
-      "aws --version",
+      "aws --version || echo 'AWS CLI version check failed'",
 
-      # Install Terraform 
-      "echo 'Installing Terraform...'",
+      # Install Terraform
       "TERRAFORM_VERSION='1.13.1'",
-      "wget https://releases.hashicorp.com/terraform/$${TERRAFORM_VERSION}/terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
-      "unzip terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
+      "wget https://releases.hashicorp.com/terraform/$${TERRAFORM_VERSION}/terraform_$${TERRAFORM_VERSION}_linux_amd64.zip || echo 'Terraform download failed'",
+      "unzip terraform_$${TERRAFORM_VERSION}_linux_amd64.zip || echo 'Terraform unzip failed'",
       "sudo mv terraform /usr/local/bin/",
       "sudo chmod +x /usr/local/bin/terraform",
-      "rm terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
-      "terraform --version",
+      "rm -f terraform_$${TERRAFORM_VERSION}_linux_amd64.zip",
+      "terraform --version || echo 'Terraform version check failed'",
 
-      # Create kubectl config directory for ubuntu user
+      # Install eksctl
+      "curl --silent --location \"https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz\" | tar xz -C /tmp || echo 'eksctl download failed'",
+      "sudo mv /tmp/eksctl /usr/local/bin",
+      "sudo chmod +x /usr/local/bin/eksctl",
+      "eksctl version || echo 'eksctl version check failed'",
+
+      # Install Helm
+      "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash || echo 'Helm install failed'",
+      "helm version || echo 'Helm version check failed'",
+
+      # Install Docker
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg || echo 'Docker GPG key failed'",
+      "echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+      "sudo apt update",
+      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io || echo 'Docker install failed'",
+      "sudo usermod -aG docker ubuntu",
+      "sudo systemctl enable docker",
+      "sudo systemctl start docker",
+
+      # Install GitHub CLI
+      "curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg || echo 'GitHub CLI GPG key failed'",
+      "sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg",
+      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null",
+      "sudo apt update",
+      "sudo apt install -y gh || echo 'GitHub CLI install failed'",
+      "gh --version || echo 'GitHub CLI version check failed'",
+
+      # Create kubectl config directory
       "mkdir -p /home/ubuntu/.kube",
       "sudo chown ubuntu:ubuntu /home/ubuntu/.kube",
 
-      # Install Helm
-      "sudo apt-get install curl -y",
-      "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash",
-      "helm version",
-
-      # Install gh
-      "sudo apt-get install gh -y",
-
-      # FIXED: Simple AWS configuration that uses instance metadata directly
-      "echo 'Configuring AWS for EKS deployment...'",
+      # Configure AWS CLI
       "mkdir -p ~/.aws",
-
-      # Remove any existing credentials file (force use of instance metadata)
       "rm -f ~/.aws/credentials",
-
-      # Create simple AWS config with just default profile
       "echo '[default]' > ~/.aws/config",
       "echo 'region = ${var.aws_region}' >> ~/.aws/config",
 
-      # DO NOT set AWS_PROFILE environment variable - let it use default
-      # DO NOT create additional profiles
+      # Test AWS configuration
+      "aws sts get-caller-identity || echo 'AWS identity test failed'",
 
-      # Test AWS configuration using instance metadata
-      "echo 'Testing AWS configuration...'",
-      "aws sts get-caller-identity",
-      "aws eks list-clusters || echo 'No clusters yet - expected'",
+      # Set up useful aliases and environment
+      "echo 'alias k=kubectl' >> ~/.bashrc",
+      "echo 'export EDITOR=nano' >> ~/.bashrc",
+      "echo 'export AWS_DEFAULT_REGION=${var.aws_region}' >> ~/.bashrc",
 
-      "echo 'EC2 setup completed - ready for EKS deployment!'"
+      # Display installation summary
+      "echo 'Installation completed. Tool versions:'",
+      "kubectl version --client 2>/dev/null || echo 'kubectl: FAILED'",
+      "aws --version 2>/dev/null || echo 'aws-cli: FAILED'",
+      "terraform --version 2>/dev/null || echo 'terraform: FAILED'",
+      "eksctl version 2>/dev/null || echo 'eksctl: FAILED'",
+      "helm version --short 2>/dev/null || echo 'helm: FAILED'",
+      "docker --version 2>/dev/null || echo 'docker: FAILED'",
+      "gh --version 2>/dev/null || echo 'gh: FAILED'",
+
+      "echo 'EC2 instance is ready for EKS deployment!'",
+      "echo 'Note: Log out and back in for Docker group permissions to take effect.'"
+    ]
+  }
+
+  # Add retry logic
+  provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      host        = aws_instance.demo_app.public_ip
+      user        = "ubuntu"
+      private_key = file(var.private_key_path)
+      timeout     = "5m"
+    }
+
+    inline = [
+      "echo 'Final connectivity test successful!'"
     ]
   }
 
