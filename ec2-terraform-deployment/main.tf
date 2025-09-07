@@ -284,22 +284,6 @@ resource "null_resource" "docker_kubectl_setup" {
       # Update system
       "sudo apt update",
 
-      # Install Docker
-      "curl -fsSL https://get.docker.com -o get-docker.sh",
-      "sudo sh get-docker.sh",
-      "sudo systemctl enable docker",
-      "sudo systemctl start docker",
-      "sudo usermod -aG docker ubuntu",
-      "sudo apt-get install docker-compose -y",
-      "docker --version",
-      "docker-compose --version",
-      "sleep 10",
-
-      # Install Loki Docker plugin
-      "sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions",
-      "sudo docker plugin ls",
-      "sleep 5",
-
       # Install kubectl
       "echo 'Installing kubectl...'",
       "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
@@ -353,15 +337,12 @@ resource "null_resource" "docker_kubectl_setup" {
       "rm -f ~/.aws/credentials",
 
       # Create AWS config with profile pointing to instance profile
-      "cat > ~/.aws/config << 'EOF'",
-      "[profile ec2-eks-app]",
-      "region = us-east-1",
-      "credential_source = Ec2InstanceMetadata",
-      "",
-      "[default]",
-      "region = us-east-1",
-      "credential_source = Ec2InstanceMetadata",
-      "EOF",
+      "echo '[default]' > ~/.aws/config",
+      "echo 'region = us-east-1' >> ~/.aws/config",
+      "echo '' >> ~/.aws/config",
+      "echo '[profile ec2-eks-app]' >> ~/.aws/config",
+      "echo 'region = us-east-1' >> ~/.aws/config",
+      "echo 'credential_source = Ec2InstanceMetadata' >> ~/.aws/config",
 
       # Set environment variables
       "echo 'export AWS_PROFILE=ec2-eks-app' >> ~/.bashrc",
