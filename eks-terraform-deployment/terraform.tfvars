@@ -7,7 +7,7 @@ cluster_name    = "eks-cluster01"
 cluster_version = "1.30"
 
 # Use existing VPC (get this from EC2 terraform output)
-existing_vpc_id = "vpc-0ae9621057a584e4f" # Replace with actual VPC ID from EC2 output
+existing_vpc_id = "vpc-07871875f5e1c66d6" # Replace with actual VPC ID from EC2 output
 
 # EC2 IAM Role ARN (get this from EC2 terraform output)
 ec2_iam_role_arn = "arn:aws:iam::800216803559:role/ec2-eks-admin-role" # Replace with actual ARN
