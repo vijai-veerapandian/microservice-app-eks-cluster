@@ -271,6 +271,10 @@ resource "null_resource" "docker_kubectl_setup" {
       # Update system
       "sudo apt update",
 
+      # Remove credentials and configure region
+      "rm -f ~/.aws/credentials",
+      "aws configure set region us-east-1",
+
       # Install Docker
       "curl -fsSL https://get.docker.com -o get-docker.sh",
       "sudo sh get-docker.sh",
@@ -330,7 +334,12 @@ resource "null_resource" "docker_kubectl_setup" {
       "helm version",
 
       # Install gh
-      "sudo apt-get install gh -y"
+      "sudo apt-get install gh -y",
+
+      # Ensure using instance profile
+      "echo 'Verifying AWS configuration..'",
+      "aws sts get-caller-identity",
+      "echo 'Setup completed"
     ]
   }
 
