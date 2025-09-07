@@ -176,74 +176,10 @@ resource "aws_iam_role" "ec2_eks_admin_role" {
   }
 }
 
-# Custom policy for EKS administration
-resource "aws_iam_policy" "eks_admin_policy" {
-  name        = "EKS-Admin-Policy"
-  description = "Policy for EC2 to manage EKS clusters"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "eks:*",
-          "ec2:DescribeAccountAttributes",
-          "ec2:DescribeAddresses",
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceTypes",
-          "ec2:DescribeInternetGateways",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DescribeRouteTables",
-          "ec2:DescribeSecurityGroups",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeVpcAttribute",
-          "ec2:DescribeAvailabilityZones",
-          "iam:ListRoles",
-          "iam:ListInstanceProfiles",
-          "iam:PassRole",
-          "iam:GetRole",
-          "iam:CreateServiceLinkedRole",
-          "iam:CreatePolicy",             # NEW
-          "iam:GetPolicy",                # NEW
-          "iam:AttachRolePolicy",         # NEW
-          "iam:DetachRolePolicy",         # NEW
-          "iam:CreateRole",               # NEW
-          "iam:TagRole",                  # NEW
-          "iam:ListAttachedRolePolicies", # NEW
-          "iam:ListRolePolicies",         # 
-          "iam:GetRolePolicy",            # 
-          "iam:PutRolePolicy",            # 
-          "iam:DeleteRolePolicy",         # 
-          "iam:ListPolicyVersions",       # 
-          "iam:GetPolicyVersion",         # 
-          "iam:CreatePolicyVersion",      # 
-          "iam:DeletePolicyVersion",      # 
-          "iam:TagPolicy",                # 
-          "iam:UntagPolicy",              # 
-          "iam:TagRole",                  # 
-          "iam:UntagRole",                # 
-          "logs:*",
-          "autoscaling:DescribeAutoScalingGroups",
-          "autoscaling:DescribeLaunchConfigurations",
-          "autoscaling:DescribeScalingActivities",
-          "cloudformation:*",
-          "kms:DescribeKey",
-          "kms:ListKeys",
-          "ecr:*",                 # NEW
-          "elasticloadbalancing:*" # NEW
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# Attach the custom policy to the role
+# Use AWS managed policy for comprehensive EKS administration
 resource "aws_iam_role_policy_attachment" "eks_admin_policy_attachment" {
   role       = aws_iam_role.ec2_eks_admin_role.name
-  policy_arn = aws_iam_policy.eks_admin_policy.arn
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 # Create instance profile
@@ -267,7 +203,8 @@ resource "aws_instance" "demo_app" {
     Name      = var.instance_name
   }
 }
-# Docker and kubectl setup using remote-exec provisioner
+
+# Fixed tools setup using remote-exec provisioner
 resource "null_resource" "tools_setup" {
   provisioner "remote-exec" {
     connection {
@@ -288,7 +225,7 @@ resource "null_resource" "tools_setup" {
       "echo 'Installing kubectl...'",
       "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
       "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
-      "rm kubectl", # Clean up the downloaded file
+      "rm kubectl",
 
       # Verify kubectl installation
       "kubectl version --client",
@@ -299,7 +236,7 @@ resource "null_resource" "tools_setup" {
       "sudo apt-get install unzip -y",
       "unzip awscliv2.zip",
       "sudo ./aws/install",
-      "rm -rf awscliv2.zip aws/", # Clean up
+      "rm -rf awscliv2.zip aws/",
       "aws --version",
 
       # Install Terraform 
@@ -316,9 +253,6 @@ resource "null_resource" "tools_setup" {
       "mkdir -p /home/ubuntu/.kube",
       "sudo chown ubuntu:ubuntu /home/ubuntu/.kube",
 
-      "echo 'kubectl version:' && kubectl version --client",
-      "echo 'AWS CLI version:' && aws --version",
-
       # Install Helm
       "sudo apt-get install curl -y",
       "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash",
@@ -327,28 +261,21 @@ resource "null_resource" "tools_setup" {
       # Install gh
       "sudo apt-get install gh -y",
 
-      # REPLACE THE COMMENTED SECTION WITH:
+      # FIXED: Simple AWS configuration that uses instance metadata directly
       "echo 'Configuring AWS for EKS deployment...'",
       "mkdir -p ~/.aws",
 
-      # Remove any user credentials (force instance profile)
+      # Remove any existing credentials file (force use of instance metadata)
       "rm -f ~/.aws/credentials",
 
-      # Create AWS config with profile pointing to instance profile
+      # Create simple AWS config with just default profile
       "echo '[default]' > ~/.aws/config",
       "echo 'region = us-east-1' >> ~/.aws/config",
-      "echo '' >> ~/.aws/config",
-      "echo '[profile ec2-eks-app]' >> ~/.aws/config",
-      "echo 'region = us-east-1' >> ~/.aws/config",
-      "echo 'credential_source = Ec2InstanceMetadata' >> ~/.aws/config",
 
-      # Set environment variables
-      "echo 'export AWS_PROFILE=ec2-eks-app' >> ~/.bashrc",
-      "echo 'export AWS_DEFAULT_REGION=us-east-1' >> ~/.bashrc",
-      "export AWS_PROFILE=ec2-eks-app",
-      "export AWS_DEFAULT_REGION=us-east-1",
+      # DO NOT set AWS_PROFILE environment variable - let it use default
+      # DO NOT create additional profiles
 
-      # Test AWS configuration
+      # Test AWS configuration using instance metadata
       "echo 'Testing AWS configuration...'",
       "aws sts get-caller-identity",
       "aws eks list-clusters || echo 'No clusters yet - expected'",

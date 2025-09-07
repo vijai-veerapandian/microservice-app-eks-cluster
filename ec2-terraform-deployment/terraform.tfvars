@@ -4,7 +4,7 @@
 
 # AWS Configuration
 aws_region  = "us-east-1"
-aws_profile = "ec2-eks-app"
+aws_profile = "default"
 
 # VPC Configuration
 vpc_name = "demo_vpc"
