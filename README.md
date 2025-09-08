@@ -283,6 +283,7 @@ docker tag flask-api:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-ap
 docker tag nginx-image:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 
 ## Push to ECR
+```
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 ```
