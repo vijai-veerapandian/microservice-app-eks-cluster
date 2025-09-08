@@ -389,6 +389,11 @@ kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"LoadBalancer"}}
 ```
 kubectl get service nginx-service -n app1 -w
 ```
+![patch-clb](patch-clb.jpg)
+
+and on API end-point checks
+
+![classic-lb](./assets/classic-lb-output.jpg)
 
 
 ## Monitoring and Troubleshooting
