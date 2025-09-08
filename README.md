@@ -113,6 +113,7 @@ First, we'll create an EC2 instance with all tools pre-installed.
    ```bash
    ssh -i ~/.ssh/demo-server-ec2awskey.pem ubuntu@$(terraform output -raw instance_public_ip)
    ```
+![ec2](./assets/ec2.jpg)
 
 ### Step 2: Deploy EKS Cluster
 
@@ -152,19 +153,21 @@ Now from the EC2 instance, we'll deploy the EKS cluster.
    terraform plan
    terraform apply
    ```
+![eks](./assets/eks-cluster01-awsconsole.jpg)
 
 4. **Configure kubectl access:**
    ```bash
    aws eks update-kubeconfig --region ca-central-1 --name eks-cluster01
    kubectl get nodes
    ```
+![eks-kubectl](./assets/step2-deploy-eks-kubectl-ouptu.jpg)
 
-   You should see your EKS nodes:
-   ```
-   NAME                                       STATUS   ROLES    AGE   VERSION
-   ip-10-0-x-x.ca-central-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
-   ip-10-0-x-x.ca-central-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
-   ```
+![eks-addons](./assetseks-cluster01-addons-awsconsole.jpg)
+
+
+5. **Worknodes Instances working for the EKS cluster**
+
+![eks-addons](./assets/awsconsole-ec2-eks-resources.jpg)
 
 ---
 
@@ -172,16 +175,7 @@ Now from the EC2 instance, we'll deploy the EKS cluster.
 
 The AWS Load Balancer Controller enables us to create Application Load Balancers automatically from Kubernetes Ingress resources.
 
-### Step 1: Install eksctl
-
-```bash
-# Download and install eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv /tmp/eksctl /usr/local/bin
-eksctl version
-```
-
-### Step 2: Create IAM Policy for Load Balancer Controller
+### Step 1: Create IAM Policy for Load Balancer Controller
 
 ```bash
 # Download the IAM policy document
@@ -193,7 +187,7 @@ aws iam create-policy \
     --policy-document file://iam_policy.json
 ```
 
-### Step 3: Create IAM Role and Service Account
+### Step 2: Create IAM Role and Service Account
 
 ```bash
 # Create service account with IAM role
@@ -206,7 +200,7 @@ eksctl create iamserviceaccount \
   --approve
 ```
 
-### Step 4: Install via Helm
+### Step 3: Install via Helm
 
 ```bash
 # Add the EKS chart repository
@@ -227,7 +221,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set vpcId=$VPC_ID
 ```
 
-### Step 5: Verify Installation
+### Step 4: Verify Installation
 
 ```bash
 # Check if the controller is running
@@ -252,6 +246,7 @@ aws-load-balancer-controller   2/2     2            2           2m
 
 Now we'll build and deploy our Flask API and Nginx proxy containers.
 
+
 ### Step 1: Set Up ECR Repositories
 
 ```bash
@@ -272,11 +267,18 @@ cd ~/microservice-app-eks-cluster/
 
 # Build your Flask API image (assuming you have a Dockerfile)
 docker build -t flask-api:latest -f path/to/api-Dockerfile .
+```
+![api-Docker](./assets/build-image01.jpg)
 
 # Build your Nginx proxy image
 docker build -t nginx-image:latest -f path/to/nginx-Dockerfile .
 
+![nginx-Docker](./assets/docker-nginx-proxy-build-image.jpg)
+
 # Tag for ECR
+
+![Docker-images](./assets/docker-images.jpg)
+
 docker tag flask-api:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
 docker tag nginx-image:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 
@@ -284,6 +286,7 @@ docker tag nginx-image:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 ```
+
 
 ### Step 3: Deploy Application to EKS
 
@@ -329,7 +332,6 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 spec:
   rules:
     - http:
@@ -419,11 +421,12 @@ aws ecr delete-repository --repository-name flask-api --region ca-central-1 --fo
 aws ecr delete-repository --repository-name nginx-image --region ca-central-1 --force
 ```
 
+
+
 ---
 
 ## Summary
 
-You've successfully:
 -  Created a VPC with public/private subnets
 -  Deployed an EC2 development instance with all tools
 -  Set up an EKS cluster with managed node groups
@@ -431,36 +434,18 @@ You've successfully:
 -  Built and pushed container images to ECR
 -  Deployed a microservice application with load balancing
 
+
 This setup provides a production-ready foundation for deploying containerized applications on AWS EKS!
 
 
+## Deploying containerized application on AWS EKS
 
 #### Running Dockerized application on EKS cluster
 
-```
-ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ docker push $ACCOUNT_ID.dkr.ecr.ca-central-1.amazonaws.com/flask-api:latest
-The push refers to repository [800216803559.dkr.ecr.ca-central-1.amazonaws.com/flask-api]
-5f54f05a7765: Pushed 
-fe8afd856fd0: Pushed 
-03a147129e89: Pushed 
-b68a34a420a7: Pushed 
-1e14701bee48: Pushed 
-dd6300239975: Pushed 
-2cbd282d81a0: Pushed 
-e6a3842ebc7f: Pushed 
-latest: digest: sha256:f65f0ba96d635ca35528111ce35f215c6a7ef66c2991608d8dce496c1b0338dc size: 1990
-ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ 
-ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ docker push $ACCOUNT_ID.dkr.ecr.ca-central-1.amazonaws.com/nginx-proxy:latest
-The push refers to repository [800216803559.dkr.ecr.ca-central-1.amazonaws.com/nginx-proxy]
-12b73254dc58: Pushed 
-f9985d3fc94d: Pushed 
-d208138be39d: Pushed 
-a2b76470e8f1: Pushed 
-917b2c97271e: Pushed 
-16ca725632e5: Pushed 
-7978a9c91f72: Pushed 
-b6ff0212304e: Pushed 
-418dccb7d85a: Pushed 
-latest: digest: sha256:afc30b7d538815c58eda9a0fb00035d92bdc3e6b2e93f367fffac7a045ab9956 size: 2196
-ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$
-```
+
+Build the docker image and then 
+
+![docker](./assetseks-cluster01-addons-awsconsole.jpg)
+
+
+
