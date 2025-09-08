@@ -360,16 +360,36 @@ kubectl get all -n app1
 # Check the ingress (ALB creation takes a few minutes)
 kubectl get ingress -n app1
 
-# Get the ALB URL
-ALB_URL=$(kubectl get ingress app-ingress -n app1 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-echo "Application URL: http://$ALB_URL"
-
-# Test your application
-curl http://$ALB_URL/
-curl http://$ALB_URL/api/v1/status  # if you have API endpoints
 ```
 
 ---
+
+Load Balancer Options Exercise
+Once your app is deployed, let's explore different access methods:
+Exercise 1: NodePort (FREE)
+
+## Convert nginx service to NodePort
+```
+kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"NodePort"}}'
+```
+## Get the port
+```
+kubectl get service nginx-service -n app1
+```
+## Access via: http://<node-public-ip>:32XXX
+
+Exercise 2: Classic Load Balancer (~$18/month)
+
+## Convert to LoadBalancer
+```
+kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"LoadBalancer"}}'
+```
+
+## Wait for external IP
+```
+kubectl get service nginx-service -n app1 -w
+```
+
 
 ## Monitoring and Troubleshooting
 
@@ -421,7 +441,6 @@ terraform destroy
 aws ecr delete-repository --repository-name flask-api --region ca-central-1 --force
 aws ecr delete-repository --repository-name nginx-image --region ca-central-1 --force
 ```
-
 
 
 ---
