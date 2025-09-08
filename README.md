@@ -75,7 +75,7 @@ First, we'll create an EC2 instance with all tools pre-installed.
 
 2. **Update `terraform.tfvars` with your settings:**
    ```hcl
-   aws_region  = "us-east-1"
+   aws_region  = "ca-central-1"
    aws_profile = "default"
    
    vpc_name = "demo_vpc"
@@ -127,7 +127,7 @@ Now from the EC2 instance, we'll deploy the EKS cluster.
 
 2. **Update `terraform.tfvars` with actual values from EC2 output:**
    ```hcl
-   aws_region  = "us-east-1"
+   aws_region  = "ca-central-1"
    aws_profile = "default"
    environment = "dev"
    
@@ -155,15 +155,15 @@ Now from the EC2 instance, we'll deploy the EKS cluster.
 
 4. **Configure kubectl access:**
    ```bash
-   aws eks update-kubeconfig --region us-east-1 --name eks-cluster01
+   aws eks update-kubeconfig --region ca-central-1 --name eks-cluster01
    kubectl get nodes
    ```
 
    You should see your EKS nodes:
    ```
    NAME                                       STATUS   ROLES    AGE   VERSION
-   ip-10-0-x-x.us-east-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
-   ip-10-0-x-x.us-east-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
+   ip-10-0-x-x.ca-central-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
+   ip-10-0-x-x.ca-central-1.compute.internal    Ready    <none>   5m    v1.30.0-eks-xxxxx
    ```
 
 ---
@@ -223,7 +223,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set clusterName=eks-cluster01 \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
-  --set region=us-east-1 \
+  --set region=ca-central-1 \
   --set vpcId=$VPC_ID
 ```
 
@@ -256,12 +256,12 @@ Now we'll build and deploy our Flask API and Nginx proxy containers.
 
 ```bash
 # Create ECR repositories for your images
-aws ecr create-repository --repository-name flask-api --region us-east-1
-aws ecr create-repository --repository-name nginx-image --region us-east-1
+aws ecr create-repository --repository-name flask-api --region ca-central-1
+aws ecr create-repository --repository-name nginx-image --region ca-central-1
 
 # Get your account ID and login to ECR
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 ```
 
 ### Step 2: Build and Push Container Images
@@ -415,8 +415,8 @@ cd ec2-terraform-deployment/
 terraform destroy
 
 # Delete ECR repositories
-aws ecr delete-repository --repository-name flask-api --region us-east-1 --force
-aws ecr delete-repository --repository-name nginx-image --region us-east-1 --force
+aws ecr delete-repository --repository-name flask-api --region ca-central-1 --force
+aws ecr delete-repository --repository-name nginx-image --region ca-central-1 --force
 ```
 
 ---
