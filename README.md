@@ -395,6 +395,10 @@ and on API end-point checks
 
 ![classic-lb](./assets/classic-lb-output.jpg)
 
+and on Browser
+
+![browser](./assets/api-app.jpg)
+
 
 ## Monitoring and Troubleshooting
 
