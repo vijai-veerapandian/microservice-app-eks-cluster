@@ -270,19 +270,19 @@ docker build -t flask-api:latest -f path/to/api-Dockerfile .
 ```
 ![api-Docker](./assets/build-image01.jpg)
 
-# Build your Nginx proxy image
+## Build your Nginx proxy image
 docker build -t nginx-image:latest -f path/to/nginx-Dockerfile .
 
 ![nginx-Docker](./assets/docker-nginx-proxy-build-image.jpg)
 
-# Tag for ECR
+## Tag for ECR
 
 ![Docker-images](./assets/docker-images.jpg)
 
 docker tag flask-api:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
 docker tag nginx-image:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 
-# Push to ECR
+## Push to ECR
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/flask-api:latest
 docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
 ```
@@ -437,15 +437,6 @@ aws ecr delete-repository --repository-name nginx-image --region ca-central-1 --
 
 This setup provides a production-ready foundation for deploying containerized applications on AWS EKS!
 
-
-## Deploying containerized application on AWS EKS
-
-#### Running Dockerized application on EKS cluster
-
-
-Build the docker image and then 
-
-![docker](./assetseks-cluster01-addons-awsconsole.jpg)
 
 
 
