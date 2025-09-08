@@ -319,7 +319,46 @@ docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/nginx-image:latest
    kubectl apply -f eks-apps/nginx-deployment.yaml
    ```
 
-### Step 4: Create Application Load Balancer with Ingress
+---
+
+### Load Balancer Options
+
+Once your app is deployed, let's explore different access methods:
+Exercise 1: NodePort (FREE)
+
+## Convert nginx service to NodePort
+```
+kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"NodePort"}}'
+```
+## Get the port
+```
+kubectl get service nginx-service -n app1
+```
+## Access via: http://<node-public-ip>:32XXX
+
+Exercise 2: Classic Load Balancer (~$18/month)
+
+## Convert to LoadBalancer
+```
+kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"LoadBalancer"}}'
+```
+
+## Wait for external IP
+```
+kubectl get service nginx-service -n app1 -w
+```
+![patch-clb](./assets/patch-clb.jpg)
+
+and on API end-point checks
+
+![classic-lb](./assets/classic-lb-output.jpg)
+
+and on Browser
+
+![browser](./assets/api-app.jpg)
+
+
+### Create Application Load Balancer with Ingress
 
 Create an ingress file `eks-apps/ingress-alb.yaml`:
 
@@ -361,44 +400,6 @@ kubectl get all -n app1
 kubectl get ingress -n app1
 
 ```
-
----
-
-Load Balancer Options Exercise
-Once your app is deployed, let's explore different access methods:
-Exercise 1: NodePort (FREE)
-
-## Convert nginx service to NodePort
-```
-kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"NodePort"}}'
-```
-## Get the port
-```
-kubectl get service nginx-service -n app1
-```
-## Access via: http://<node-public-ip>:32XXX
-
-Exercise 2: Classic Load Balancer (~$18/month)
-
-## Convert to LoadBalancer
-```
-kubectl patch service nginx-service -n app1 -p '{"spec":{"type":"LoadBalancer"}}'
-```
-
-## Wait for external IP
-```
-kubectl get service nginx-service -n app1 -w
-```
-![patch-clb](./assets/patch-clb.jpg)
-
-and on API end-point checks
-
-![classic-lb](./assets/classic-lb-output.jpg)
-
-and on Browser
-
-![browser](./assets/api-app.jpg)
-
 
 ## Monitoring and Troubleshooting
 
