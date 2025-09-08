@@ -126,7 +126,7 @@ update the local aws cli to use the access and secret key.
 ➜  microservice-app-eks-cluster git:(main) aws configure
 AWS Access Key ID [None]: xxxxx
 AWS Secret Access Key [None]: xxxxx
-Default region name [None]: us-west-2
+Default region name [None]: ca-central-1
 Default output format [None]: json
 ```
 ### Step: Build microservice docker image
@@ -143,21 +143,21 @@ docker build -t flask-api:initial -f api-Dockerfile .
 docker build -t nginx-image:latest -f nginx-Dockerfile .
 ```
 ```
-docker tag flask-api:initial 800216803559.dkr.ecr.us-west-2.amazonaws.com/flask-api:initial
+docker tag flask-api:initial 800216803559.dkr.ecr.ca-central-1.amazonaws.com/flask-api:initial
 
-docker tag nginx-image:latest 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
+docker tag nginx-image:latest 800216803559.dkr.ecr.ca-central-1.amazonaws.com/nginx-image:latest
 ```
 
 ```
-aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 800216803559.dkr.ecr.us-west-2.amazonaws.com
+aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 800216803559.dkr.ecr.ca-central-1.amazonaws.com
 
-aws ecr create-repository --repository-name flask-api --region us-west-2
+aws ecr create-repository --repository-name flask-api --region ca-central-1
 
 docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/flask-api:initial
 ```
 
 ```
-aws ecr create-repository --repository-name nginx-image --region us-west-2
+aws ecr create-repository --repository-name nginx-image --region ca-central-1
 
 docker push 800216803559.dkr.ecr.us-west-2.amazonaws.com/nginx-image:latest
 
@@ -178,11 +178,11 @@ terraform apply -auto-approve
 ```
  eks-terraform-deployment git:(main)  terraform output cluster_arn                                             
 
-"arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster"
+"arn:aws:eks:ca-central-1:800216803559:cluster/eks-blueprint-cluster"
 ```
 
 ```
-➜  eks-terraform-deployment git:(main)  aws eks --region us-west-2 update-kubeconfig --name eks-blueprint-cluster
+➜  eks-terraform-deployment git:(main)  aws eks --region ca-central-1 update-kubeconfig --name eks-cluster01
 Updated context arn:aws:eks:us-west-2:800216803559:cluster/eks-blueprint-cluster in /home/vijai/.kube/config
 ➜  eks-terraform-deployment git:(main)  kubectl get nodes
 NAME                                        STATUS   ROLES    AGE     VERSION
