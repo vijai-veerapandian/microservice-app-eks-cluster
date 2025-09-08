@@ -432,3 +432,35 @@ You've successfully:
 -  Deployed a microservice application with load balancing
 
 This setup provides a production-ready foundation for deploying containerized applications on AWS EKS!
+
+
+
+#### Running Dockerized application on EKS cluster
+
+```
+ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ docker push $ACCOUNT_ID.dkr.ecr.ca-central-1.amazonaws.com/flask-api:latest
+The push refers to repository [800216803559.dkr.ecr.ca-central-1.amazonaws.com/flask-api]
+5f54f05a7765: Pushed 
+fe8afd856fd0: Pushed 
+03a147129e89: Pushed 
+b68a34a420a7: Pushed 
+1e14701bee48: Pushed 
+dd6300239975: Pushed 
+2cbd282d81a0: Pushed 
+e6a3842ebc7f: Pushed 
+latest: digest: sha256:f65f0ba96d635ca35528111ce35f215c6a7ef66c2991608d8dce496c1b0338dc size: 1990
+ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ 
+ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$ docker push $ACCOUNT_ID.dkr.ecr.ca-central-1.amazonaws.com/nginx-proxy:latest
+The push refers to repository [800216803559.dkr.ecr.ca-central-1.amazonaws.com/nginx-proxy]
+12b73254dc58: Pushed 
+f9985d3fc94d: Pushed 
+d208138be39d: Pushed 
+a2b76470e8f1: Pushed 
+917b2c97271e: Pushed 
+16ca725632e5: Pushed 
+7978a9c91f72: Pushed 
+b6ff0212304e: Pushed 
+418dccb7d85a: Pushed 
+latest: digest: sha256:afc30b7d538815c58eda9a0fb00035d92bdc3e6b2e93f367fffac7a045ab9956 size: 2196
+ubuntu@ip-10-0-101-191:~/microservice-app-eks-cluster/containerization$
+```
