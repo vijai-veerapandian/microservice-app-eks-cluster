@@ -47,6 +47,12 @@ This project demonstrates building and deploying a Flask API with Nginx proxy to
 -  Infrastructure as Code
 -  Production-ready setup
 
+## 
+
+#### Technical Architecture
+
+![eks](./assets/eks.jpg)
+
 
 ## Prerequisites
 
